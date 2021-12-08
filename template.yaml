@@ -1,0 +1,130 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  solace-stats
+
+  API for statistics on the Solace Coverage Protocol
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    AutoPublishAlias: live
+    Tracing: Active
+    Environment:
+      Variables:
+        DEAD_LETTER_TOPIC: arn:aws:sns:us-west-2:151427405638:DeadLetterSnsTopic
+        DATA_BUCKET: stats.solace.fi.data
+    DeadLetterQueue:
+      Type: SNS
+      TargetArn: arn:aws:sns:us-west-2:151427405638:DeadLetterSnsTopic
+  Api:
+    Cors:
+      AllowMethods: "'OPTIONS,GET,POST,PUT,DELETE'"
+      AllowHeaders: "'Content-Type'"
+      AllowOrigin: "'*'"
+
+Resources:
+  # Rest API
+  RestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: SolaceStatsApi
+      Domain:
+        DomainName: stats.solace.fi
+        CertificateArn: arn:aws:acm:us-west-2:151427405638:certificate/55b18704-e0db-4ce8-b070-43fc8b0c919d
+        Route53:
+          HostedZoneId: Z0480029MZJJGNMS3NEJ
+      StageName: prod
+      TracingEnabled: true
+  OptionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SolaceStatsOptionsFunction
+      Handler: api/options.handler
+      Runtime: python3.8
+      MemorySize: 128
+      Timeout: 3
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /
+            Method: options
+            RestApiId: !Ref RestApi
+  SolaceTotalSupplyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SolaceStatsSolaceTotalSupplyFunction
+      Handler: api/SOLACE/totalSupply/get.handler
+      Runtime: python3.8
+      MemorySize: 1024
+      Timeout: 60
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /SOLACE/totalSupply
+            Method: get
+            RestApiId: !Ref RestApi
+  SolaceCirculatingSupplyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SolaceStatsSolaceCirculatingSupplyFunction
+      Handler: api/SOLACE/circulatingSupply/get.handler
+      Runtime: python3.8
+      MemorySize: 1024
+      Timeout: 60
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /SOLACE/circulatingSupply
+            Method: get
+            RestApiId: !Ref RestApi
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: SolaceStatsLambdaExecutionRole
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [lambda.amazonaws.com]
+            Action: sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - !Sub "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      Policies:
+        - PolicyName: SolaceStatsLambdaExecutionPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "sns:*"
+                  - "s3:*"
+                  - "lambda:*"
+                  - "dynamodb:*"
+                  - "sqs:*"
+                Resource: "*"
+  # Data Bucket
+  DataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: stats.solace.fi.data
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      CorsConfiguration:
+        CorsRules:
+          - AllowedMethods:
+              - HEAD
+              - GET
+            AllowedOrigins:
+              - "*"
+            AllowedHeaders:
+              - "*"
