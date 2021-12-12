@@ -84,6 +84,38 @@ Resources:
             Path: /SOLACE/circulatingSupply
             Method: get
             RestApiId: !Ref RestApi
+  XSolaceTotalSupplyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SolaceStatsXSolaceTotalSupplyFunction
+      Handler: api/xSOLACE/totalSupply/get.handler
+      Runtime: python3.8
+      MemorySize: 1024
+      Timeout: 60
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /xSOLACE/totalSupply
+            Method: get
+            RestApiId: !Ref RestApi
+  XSolaceCirculatingSupplyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SolaceStatsxSolaceCirculatingSupplyFunction
+      Handler: api/xSOLACE/circulatingSupply/get.handler
+      Runtime: python3.8
+      MemorySize: 1024
+      Timeout: 60
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /xSOLACE/circulatingSupply
+            Method: get
+            RestApiId: !Ref RestApi
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
