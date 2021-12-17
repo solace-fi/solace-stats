@@ -52,6 +52,38 @@ Resources:
             Path: /
             Method: options
             RestApiId: !Ref RestApi
+  FaviconFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SolaceStatsFaviconFunction
+      Handler: api/favicon/get.handler
+      Runtime: python3.8
+      MemorySize: 128
+      Timeout: 3
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /favicon.ico
+            Method: get
+            RestApiId: !Ref RestApi
+  IndexFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SolaceStatsIndexFunction
+      Handler: api/get.handler
+      Runtime: python3.8
+      MemorySize: 1024
+      Timeout: 60
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /
+            Method: get
+            RestApiId: !Ref RestApi
   SolaceTotalSupplyFunction:
     Type: AWS::Serverless::Function
     Properties:
