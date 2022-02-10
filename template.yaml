@@ -151,7 +151,7 @@ Resources:
   SoteriaPolicyDescriptorFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: SolaceStatsxSolaceCirculatingSupplyFunction
+      FunctionName: SolaceStatsSoteriaPolicyDescriptorFunction
       Handler: api/policy/get.handler
       Runtime: python3.8
       MemorySize: 1024
