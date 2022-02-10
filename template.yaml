@@ -148,6 +148,22 @@ Resources:
             Path: /xSOLACE/circulatingSupply
             Method: get
             RestApiId: !Ref RestApi
+  SoteriaPolicyDescriptorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SolaceStatsxSolaceCirculatingSupplyFunction
+      Handler: api/policy/get.handler
+      Runtime: python3.8
+      MemorySize: 1024
+      Timeout: 60
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /policy
+            Method: get
+            RestApiId: !Ref RestApi
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:

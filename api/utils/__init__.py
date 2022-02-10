@@ -89,3 +89,19 @@ SOLACE_ADDRESS = "0x501acE9c35E60f03A2af4d484f49F9B1EFde9f40"
 xSOLACE_ADDRESS = "0x501AcE5aC3Af20F49D53242B6D208f3B91cfc411"
 erc20Json = json.loads(s3_get("abi/other/ERC20.json", cache=True))
 ONE_ETHER = 1000000000000000000
+
+config_s3 = json.loads(s3_get('config.json', cache=True))
+
+def get_config(chain_id: str):
+    if chain_id in config_s3['supported_chains']:
+        cfg = config_s3[chain_id]
+        w3 = Web3(Web3.HTTPProvider(cfg["alchemyUrl"].format(alchemy_key)))
+        cfg["w3"] = w3
+
+        if len(cfg['soteria']) > 0:
+            soteria_json = json.loads(s3_get('abi/soteria/SolaceCoverProduct.json', cache=True))
+            soteriaContract = w3.eth.contract(address=cfg["soteria"], abi=soteria_json["abi"])
+            cfg["soteriaContract"] = soteriaContract
+        return cfg
+    else:
+        return None
