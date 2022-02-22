@@ -164,6 +164,36 @@ Resources:
             Path: /policy
             Method: get
             RestApiId: !Ref RestApi
+  SolaceTVLFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SolaceStatsTVLFunction
+      Handler: api/tvl/get.handler
+      Runtime: python3.8
+      MemorySize: 1024
+      Timeout: 600
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /tvl
+            Method: get
+            RestApiId: !Ref RestApi
+  SolaceTVLCalculatorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SolaceStatsTVLCalculatorFunction
+      Handler: api/tvl/tvl_calculator.main
+      Runtime: python3.8
+      MemorySize: 1024
+      Timeout: 600
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        ScheduledEvent:
+          Type: Schedule
+          Properties:
+            Schedule: rate(60 minutes)
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
