@@ -73,9 +73,9 @@ Resources:
     Properties:
       FunctionName: SolaceStatsIndexFunction
       Handler: api/get.handler
-      Runtime: python3.8
-      MemorySize: 1024
-      Timeout: 60
+      Runtime: nodejs14.x
+      MemorySize: 128
+      Timeout: 10
       Role: !GetAtt LambdaExecutionRole.Arn
       Events:
         GetEvent:
