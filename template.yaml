@@ -41,9 +41,9 @@ Resources:
     Properties:
       FunctionName: SolaceStatsOptionsFunction
       Handler: api/options.handler
-      Runtime: python3.8
+      Runtime: nodejs14.x
       MemorySize: 128
-      Timeout: 3
+      Timeout: 10
       Role: !GetAtt LambdaExecutionRole.Arn
       Events:
         GetEvent:
