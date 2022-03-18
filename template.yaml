@@ -89,7 +89,7 @@ Resources:
     Properties:
       FunctionName: SolaceStatsSolaceTotalSupplyFunction
       Handler: api/SOLACE/totalSupply/get.handler
-      Runtime: python3.8
+      Runtime: nodejs14.x
       MemorySize: 1024
       Timeout: 60
       Role: !GetAtt LambdaExecutionRole.Arn

@@ -1,9 +1,4 @@
-const body = `<ul>
-<li><a href="/SOLACE/totalSupply/">SOLACE total supply</a></li>
-<li><a href="/SOLACE/circulatingSupply/">SOLACE circulating supply</a></li>
-<li><a href="/xSOLACE/totalSupply/">xSOLACE total supply</a></li>
-<li><a href="/xSOLACE/circulatingSupply/">xSOLACE circulating supply</a></li>
-</ul>`
+const fs = require('fs')
 
 // Define headers
 const headers = {
@@ -18,6 +13,6 @@ exports.handler = async function(event) {
   return {
     statusCode: 200,
     headers: headers,
-    body: body
+    body: fs.readFileSync('api/index.html').toString()
   }
 }
