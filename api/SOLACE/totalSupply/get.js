@@ -17,9 +17,9 @@ const SOLACE_ADDRESS = "0x501acE9c35E60f03A2af4d484f49F9B1EFde9f40"
 
 function verifyChainID(params) {
   var chainID = params["chainid"] || params["chainId"] || params["chainID"]
-  if(!chainID) throw { name: "InputError", message: "chainID not found"}
+  if(!chainID) throw { name: "InputError", stack: "chainID not found"}
   chainID = chainID.toLowerCase()
-  if(!ALL_CHAINS.includes(chainID)) throw { name: "InputError", message: `chainID '${chainID}' not recognized`}
+  if(!ALL_CHAINS.includes(chainID)) throw { name: "InputError", stack: `chainID '${chainID}' not recognized`}
   return chainID
 }
 
@@ -78,7 +78,7 @@ exports.handler = async function(event) {
         return {
           statusCode: 400,
           headers: headers,
-          body: e.message
+          body: e.stack
         }
         break
       default:

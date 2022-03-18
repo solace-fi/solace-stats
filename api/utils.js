@@ -20,16 +20,19 @@ async function s3GetObjectPromise(params, cache=false) {
         Object.keys(s3_cache[params["Bucket"]]).includes(params["Key"])
       ) resolve(s3_cache[params["Bucket"]][params["Key"]])
       S3.getObject(params, (err,data) => {
-        if(err) reject('\ns3GetObjectPromise\n'+err.toString())
-        else {
+        if(err) {
+          err.stack = `Could not S3 get ${JSON.stringify(params)}\n${err.stack}`
+          reject(err)
+        } else {
           var res = data['Body'].toString()
           if(!Object.keys(s3_cache).includes(params["Bucket"])) s3_cache[params["Bucket"]] = {}
           s3_cache[params["Bucket"]][params["Key"]] = res
           resolve(res)
         }
       })
-    } catch(e) {
-      reject('\ns3GetObjectPromise\n'+e.stack)
+    } catch(err) {
+      err.stack = `Could not S3 get ${JSON.stringify(params)}\n${err.stack}`
+      reject(err)
     }
   })
 }
@@ -41,11 +44,16 @@ async function s3PutObjectPromise(params) {
   return new Promise((resolve,reject) => {
     try {
       S3.putObject(params, (err,data) => {
-        if(err) reject('\ns3PutObjectPromise\n'+err.toString())
-        else resolve(data)
+        if(err) {
+          var params2 = { Bucket: params.Bucket, Key: params.Key }
+          err.stack = `Could not S3 put ${JSON.stringify(params2)}\n${err.stack}`
+          reject(err)
+        } else resolve(data)
       })
     } catch(e) {
-      reject('\ns3PutObjectPromise\n'+err.toString())
+      var params2 = { Bucket: params.Bucket, Key: params.Key }
+      err.stack = `Could not S3 put ${JSON.stringify(params2)}\n${err.stack}`
+      reject(err)
     }
   })
 }
@@ -65,7 +73,7 @@ exports.snsPublishMessage = snsPublishMessage
 // formats an error message then publishes it to SNS
 // returns a promise representing the request
 async function snsPublishError(event, err) {
-  var msg = `The following error occurred in ${event["headers"]["X-Forwarded-Proto"]}://${event["headers"]["Host"]}${event["path"]} params=${JSON.stringify(event["queryStringParameters"])} :\n${err.stack}`
+  var msg = `The following error occurred in the solace-stats api\n${event["headers"]["X-Forwarded-Proto"]}://${event["headers"]["Host"]}${event["path"]} params=${JSON.stringify(event["queryStringParameters"])} :\n${err.stack || err.toString()}`
   return snsPublishMessage(msg)
 }
 exports.snsPublishError = snsPublishError
@@ -84,6 +92,6 @@ async function getProvider(chainID) {
     return new ethers.providers.JsonRpcProvider("https://mainnet.aurora.dev")
   } else if(chainNum == 1313161555) {
     return new ethers.providers.JsonRpcProvider("https://testnet.aurora.dev")
-  } else throw { name: 'UnknownError', message: `Could not create an ethers provider for chainID '${chainNum}'`}
+  } else throw { name: 'UnknownError', stack: `Could not create an ethers provider for chainID '${chainNum}'`}
 }
 exports.getProvider = getProvider
