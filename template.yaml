@@ -116,11 +116,11 @@ Resources:
             Path: /SOLACE/circulatingSupply
             Method: get
             RestApiId: !Ref RestApi
-  XSolaceTotalSupplyFunction:
+  XSolaceV1TotalSupplyFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: SolaceStatsXSolaceTotalSupplyFunction
-      Handler: api/xSOLACE/totalSupply/get.handler
+      FunctionName: SolaceStatsXSolaceV1TotalSupplyFunction
+      Handler: api/xSOLACEv1/totalSupply/get.handler
       Runtime: python3.8
       MemorySize: 1024
       Timeout: 60
@@ -129,14 +129,14 @@ Resources:
         GetEvent:
           Type: Api
           Properties:
-            Path: /xSOLACE/totalSupply
+            Path: /xSOLACEv1/totalSupply
             Method: get
             RestApiId: !Ref RestApi
-  XSolaceCirculatingSupplyFunction:
+  XSolaceV1CirculatingSupplyFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: SolaceStatsxSolaceCirculatingSupplyFunction
-      Handler: api/xSOLACE/circulatingSupply/get.handler
+      FunctionName: SolaceStatsXSolaceV1CirculatingSupplyFunction
+      Handler: api/xSOLACEv1/circulatingSupply/get.handler
       Runtime: python3.8
       MemorySize: 1024
       Timeout: 60
@@ -145,7 +145,7 @@ Resources:
         GetEvent:
           Type: Api
           Properties:
-            Path: /xSOLACE/circulatingSupply
+            Path: /xSOLACEv1/circulatingSupply
             Method: get
             RestApiId: !Ref RestApi
   SoteriaPolicyDescriptorFunction:
