@@ -1,4 +1,4 @@
-const fs = require('fs')
+const { s3GetObjectPromise, snsPublishError } = require("./utils")
 
 // Define headers
 const headers = {
@@ -10,9 +10,19 @@ const headers = {
 
 // Lambda handler
 exports.handler = async function(event) {
-  return {
-    statusCode: 200,
-    headers: headers,
-    body: fs.readFileSync('api/index.html').toString()
+  try {
+    var res = await s3GetObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'index.html' })
+    return {
+      statusCode: 200,
+      headers: headers,
+      body: res
+    }
+  } catch (e) {
+    await snsPublishError(event, e)
+    return {
+      statusCode: 500,
+      headers: headers,
+      body: "internal server error"
+    }
   }
 }
