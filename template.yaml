@@ -226,6 +226,22 @@ Resources:
           Type: Schedule
           Properties:
             Schedule: rate(60 minutes)
+  FsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SolaceStatsFsFunction
+      Handler: api/fs/get.handler
+      Runtime: nodejs14.x
+      MemorySize: 1024
+      Timeout: 60
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /fs
+            Method: get
+            RestApiId: !Ref RestApi
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:

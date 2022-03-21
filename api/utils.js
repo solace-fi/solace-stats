@@ -4,6 +4,8 @@ const AWS = require('aws-sdk')
 AWS.config.update({region: 'us-west-2'})
 // Create S3 service
 const S3 = new AWS.S3({apiVersion: '2006-03-01'})
+exports.AWS = AWS
+exports.S3 = S3
 
 const ethers = require('ethers')
 const BN = ethers.BigNumber
