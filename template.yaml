@@ -41,9 +41,9 @@ Resources:
     Properties:
       FunctionName: SolaceStatsOptionsFunction
       Handler: api/options.handler
-      Runtime: python3.8
+      Runtime: nodejs14.x
       MemorySize: 128
-      Timeout: 3
+      Timeout: 10
       Role: !GetAtt LambdaExecutionRole.Arn
       Events:
         GetEvent:
@@ -57,9 +57,9 @@ Resources:
     Properties:
       FunctionName: SolaceStatsFaviconFunction
       Handler: api/favicon/get.handler
-      Runtime: python3.8
+      Runtime: nodejs14.x
       MemorySize: 128
-      Timeout: 3
+      Timeout: 10
       Role: !GetAtt LambdaExecutionRole.Arn
       Events:
         GetEvent:
@@ -73,9 +73,9 @@ Resources:
     Properties:
       FunctionName: SolaceStatsIndexFunction
       Handler: api/get.handler
-      Runtime: python3.8
-      MemorySize: 1024
-      Timeout: 60
+      Runtime: nodejs14.x
+      MemorySize: 128
+      Timeout: 10
       Role: !GetAtt LambdaExecutionRole.Arn
       Events:
         GetEvent:
@@ -89,7 +89,7 @@ Resources:
     Properties:
       FunctionName: SolaceStatsSolaceTotalSupplyFunction
       Handler: api/SOLACE/totalSupply/get.handler
-      Runtime: python3.8
+      Runtime: nodejs14.x
       MemorySize: 1024
       Timeout: 60
       Role: !GetAtt LambdaExecutionRole.Arn
@@ -105,7 +105,7 @@ Resources:
     Properties:
       FunctionName: SolaceStatsSolaceCirculatingSupplyFunction
       Handler: api/SOLACE/circulatingSupply/get.handler
-      Runtime: python3.8
+      Runtime: nodejs14.x
       MemorySize: 1024
       Timeout: 60
       Role: !GetAtt LambdaExecutionRole.Arn
@@ -121,7 +121,7 @@ Resources:
     Properties:
       FunctionName: SolaceStatsXSolaceTotalSupplyFunction
       Handler: api/xSOLACE/totalSupply/get.handler
-      Runtime: python3.8
+      Runtime: nodejs14.x
       MemorySize: 1024
       Timeout: 60
       Role: !GetAtt LambdaExecutionRole.Arn
@@ -135,9 +135,9 @@ Resources:
   XSolaceCirculatingSupplyFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: SolaceStatsxSolaceCirculatingSupplyFunction
+      FunctionName: SolaceStatsXSolaceCirculatingSupplyFunction
       Handler: api/xSOLACE/circulatingSupply/get.handler
-      Runtime: python3.8
+      Runtime: nodejs14.x
       MemorySize: 1024
       Timeout: 60
       Role: !GetAtt LambdaExecutionRole.Arn
@@ -146,6 +146,38 @@ Resources:
           Type: Api
           Properties:
             Path: /xSOLACE/circulatingSupply
+            Method: get
+            RestApiId: !Ref RestApi
+  XSolaceV1TotalSupplyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SolaceStatsXSolaceV1TotalSupplyFunction
+      Handler: api/xSOLACEv1/totalSupply/get.handler
+      Runtime: python3.8
+      MemorySize: 1024
+      Timeout: 60
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /xSOLACEv1/totalSupply
+            Method: get
+            RestApiId: !Ref RestApi
+  XSolaceV1CirculatingSupplyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SolaceStatsXSolaceV1CirculatingSupplyFunction
+      Handler: api/xSOLACEv1/circulatingSupply/get.handler
+      Runtime: python3.8
+      MemorySize: 1024
+      Timeout: 60
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /xSOLACEv1/circulatingSupply
             Method: get
             RestApiId: !Ref RestApi
   SoteriaPolicyDescriptorFunction:
@@ -194,6 +226,22 @@ Resources:
           Type: Schedule
           Properties:
             Schedule: rate(60 minutes)
+  FsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SolaceStatsFsFunction
+      Handler: api/fs/get.handler
+      Runtime: nodejs14.x
+      MemorySize: 1024
+      Timeout: 60
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /fs
+            Method: get
+            RestApiId: !Ref RestApi
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
