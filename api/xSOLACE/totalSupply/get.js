@@ -14,6 +14,7 @@ const headers = {
 const CHAIN_IDS = [1,137,1313161554] // mainnet, polygon, aurora
 const ALL_CHAINS = ["sum","all","1","137","1313161554"]
 const XSOLACE_ADDRESS = "0x501ACe802447B1Ed4Aae36EA830BFBde19afbbF9"
+const ERC20ABI = [{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]
 
 function verifyChainID(params) {
   if(!params) return "sum"
@@ -25,12 +26,11 @@ function verifyChainID(params) {
 }
 
 async function getTotalSupply(chainID) {
-  var [erc20Abi, skipAddresses, provider] = await Promise.all([
-    s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'abi/other/ERC20.json'}, cache=true).then(JSON.parse),
+  var [skipAddresses, provider] = await Promise.all([
     s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'xSOLACE/totalSupply/skip_addresses.json'}, cache=true).then(JSON.parse),
     getProvider(chainID)
   ])
-  var xsolace = new ethers.Contract(XSOLACE_ADDRESS, erc20Abi, provider)
+  var xsolace = new ethers.Contract(XSOLACE_ADDRESS, ERC20ABI, provider)
   var blockTag = await provider.getBlockNumber()
   var supply = await xsolace.totalSupply({blockTag:blockTag})
   var balances = await Promise.all(Object.keys(skipAddresses[chainID+""]).map(addr => xsolace.balanceOf(addr, {blockTag:blockTag})))
@@ -63,7 +63,6 @@ async function handle(event) {
 async function prefetch() {
   await Promise.all([
     s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'alchemy_key.txt'}, cache=true),
-    s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'abi/other/ERC20.json'}, cache=true),
     s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'xSOLACE/totalSupply/skip_addresses.json'}, cache=false)
   ])
 }
