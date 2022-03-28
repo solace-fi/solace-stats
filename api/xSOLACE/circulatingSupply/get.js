@@ -16,8 +16,9 @@ const ALL_CHAINS = ["sum","all","1","137","1313161554"]
 const XSOLACE_ADDRESS = "0x501ACe802447B1Ed4Aae36EA830BFBde19afbbF9"
 
 function verifyChainID(params) {
+  if(!params) return "sum"
   var chainID = params["chainid"] || params["chainId"] || params["chainID"]
-  if(!chainID) throw { name: "InputError", stack: "chainID not found"}
+  if(!chainID) return "sum"
   chainID = chainID.toLowerCase()
   if(!ALL_CHAINS.includes(chainID)) throw { name: "InputError", stack: `chainID '${chainID}' not recognized`}
   return chainID
@@ -63,7 +64,7 @@ async function prefetch() {
   await Promise.all([
     s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'alchemy_key.txt'}, cache=true),
     s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'abi/other/ERC20.json'}, cache=true),
-    s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'xSOLACE/circulatingSupply/skip_addresses.json'}, cache=true)
+    s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'xSOLACE/circulatingSupply/skip_addresses.json'}, cache=false)
   ])
 }
 

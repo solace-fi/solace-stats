@@ -16,20 +16,25 @@ const ALL_CHAINS = ["sum","all","1","137","1313161554"]
 const SOLACE_ADDRESS = "0x501acE9c35E60f03A2af4d484f49F9B1EFde9f40"
 
 function verifyChainID(params) {
+  if(!params) return "sum"
   var chainID = params["chainid"] || params["chainId"] || params["chainID"]
-  if(!chainID) throw { name: "InputError", stack: "chainID not found"}
+  if(!chainID) return "sum"
   chainID = chainID.toLowerCase()
   if(!ALL_CHAINS.includes(chainID)) throw { name: "InputError", stack: `chainID '${chainID}' not recognized`}
   return chainID
 }
 
 async function getTotalSupply(chainID) {
-  var [erc20Abi, provider] = await Promise.all([
+  var [erc20Abi, skipAddresses, provider] = await Promise.all([
     s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'abi/other/ERC20.json'}, cache=true).then(JSON.parse),
+    s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'SOLACE/totalSupply/skip_addresses.json'}, cache=true).then(JSON.parse),
     getProvider(chainID)
   ])
   var solace = new ethers.Contract(SOLACE_ADDRESS, erc20Abi, provider)
-  let supply = await solace.totalSupply()
+  var blockTag = await provider.getBlockNumber()
+  var supply = await solace.totalSupply({blockTag:blockTag})
+  var balances = await Promise.all(Object.keys(skipAddresses[chainID+""]).map(addr => solace.balanceOf(addr, {blockTag:blockTag})))
+  balances.forEach(b => { supply = supply.sub(b) });
   return supply
 }
 
@@ -50,7 +55,7 @@ async function handle(event) {
       return JSON.stringify(res)
     }
   } else {
-    var supply = await getTotalSupply(chainID)
+    var supply = await getTotalSupply(chainID-0)
     return formatUnits(supply, 18)
   }
 }
@@ -58,7 +63,8 @@ async function handle(event) {
 async function prefetch() {
   await Promise.all([
     s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'alchemy_key.txt'}, cache=true),
-    s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'abi/other/ERC20.json'}, cache=true)
+    s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'abi/other/ERC20.json'}, cache=true),
+    s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'SOLACE/totalSupply/skip_addresses.json'}, cache=false)
   ])
 }
 
