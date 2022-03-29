@@ -84,6 +84,22 @@ Resources:
             Path: /
             Method: get
             RestApiId: !Ref RestApi
+  SolaceBalanceOfFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SolaceStatsSolaceBalanceOfFunction
+      Handler: api/SOLACE/balanceOf/get.handler
+      Runtime: nodejs14.x
+      MemorySize: 1024
+      Timeout: 60
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /SOLACE/balanceOf
+            Method: get
+            RestApiId: !Ref RestApi
   SolaceTotalSupplyFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -114,6 +130,22 @@ Resources:
           Type: Api
           Properties:
             Path: /SOLACE/circulatingSupply
+            Method: get
+            RestApiId: !Ref RestApi
+  XSolaceBalanceOfFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SolaceStatsXSolaceBalanceOfFunction
+      Handler: api/xSOLACE/balanceOf/get.handler
+      Runtime: nodejs14.x
+      MemorySize: 1024
+      Timeout: 60
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /xSOLACE/balanceOf
             Method: get
             RestApiId: !Ref RestApi
   XSolaceTotalSupplyFunction:
@@ -148,12 +180,28 @@ Resources:
             Path: /xSOLACE/circulatingSupply
             Method: get
             RestApiId: !Ref RestApi
+  XSolaceV1BalanceOfFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SolaceStatsXSolaceV1BalanceOfFunction
+      Handler: api/xSOLACEv1/balanceOf/get.handler
+      Runtime: nodejs14.x
+      MemorySize: 1024
+      Timeout: 60
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /xSOLACEv1/balanceOf
+            Method: get
+            RestApiId: !Ref RestApi
   XSolaceV1TotalSupplyFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: SolaceStatsXSolaceV1TotalSupplyFunction
       Handler: api/xSOLACEv1/totalSupply/get.handler
-      Runtime: python3.8
+      Runtime: nodejs14.x
       MemorySize: 1024
       Timeout: 60
       Role: !GetAtt LambdaExecutionRole.Arn
@@ -169,7 +217,7 @@ Resources:
     Properties:
       FunctionName: SolaceStatsXSolaceV1CirculatingSupplyFunction
       Handler: api/xSOLACEv1/circulatingSupply/get.handler
-      Runtime: python3.8
+      Runtime: nodejs14.x
       MemorySize: 1024
       Timeout: 60
       Role: !GetAtt LambdaExecutionRole.Arn

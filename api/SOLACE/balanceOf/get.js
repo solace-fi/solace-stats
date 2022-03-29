@@ -25,45 +25,49 @@ function verifyChainID(params) {
   return chainID
 }
 
-async function getTotalSupply(chainID) {
-  var [skipAddresses, provider] = await Promise.all([
-    s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'SOLACE/totalSupply/skip_addresses.json'}, cache=true).then(JSON.parse),
+function verifyAccount(params) {
+  if(!params) throw { name: "InputError", stack: 'account not given'}
+  var account = params["account"]
+  if(!account) throw { name: "InputError", stack: 'account not given'}
+  if(!ethers.utils.isAddress(account)) throw { name: "InputError", stack: `'${account}' is not a valid account`}
+  return account
+}
+
+async function getBalanceOf(chainID, account) {
+  var [provider] = await Promise.all([
     getProvider(chainID)
   ])
   var solace = new ethers.Contract(SOLACE_ADDRESS, ERC20ABI, provider)
-  var blockTag = await provider.getBlockNumber()
-  var supply = await solace.totalSupply({blockTag:blockTag})
-  var balances = await Promise.all(Object.keys(skipAddresses[chainID+""]).map(addr => solace.balanceOf(addr, {blockTag:blockTag})))
-  balances.forEach(b => { supply = supply.sub(b) });
-  return supply
+  var bal = await solace.balanceOf(account)
+  return bal
 }
 
 async function handle(event) {
   var chainID = verifyChainID(event["queryStringParameters"])
+  var account = verifyAccount(event["queryStringParameters"])
   if(chainID == "sum" || chainID == "all") {
-    var promises = CHAIN_IDS.map(getTotalSupply)
-    var supplies = await Promise.all(promises)
+    var promises = CHAIN_IDS.map(chain => getBalanceOf(chain, account))
+    var balances = await Promise.all(promises)
     if(chainID == "sum") {
       var sum = BN.from(0)
-      supplies.forEach(supply => sum = sum.add(supply))
+      balances.forEach(bal => sum = sum.add(bal))
       return formatUnits(sum, 18)
     } else {
       var res = {}
       for(var i = 0; i < CHAIN_IDS.length; ++i) {
-        res[CHAIN_IDS[i]+""] = formatUnits(supplies[i], 18)
+        res[CHAIN_IDS[i]+""] = formatUnits(balances[i], 18)
       }
       return JSON.stringify(res)
     }
   } else {
-    var supply = await getTotalSupply(chainID-0)
-    return formatUnits(supply, 18)
+    var bal = await getBalanceOf(chainID-0, account)
+    return formatUnits(bal, 18)
   }
 }
 
 async function prefetch() {
   await Promise.all([
-    s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'alchemy_key.txt'}, cache=true),
-    s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'SOLACE/totalSupply/skip_addresses.json'}, cache=false)
+    s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'alchemy_key.txt'}, cache=true)
   ])
 }
 

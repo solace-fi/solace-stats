@@ -2,10 +2,6 @@ const { S3, snsPublishError } = require("./../utils")
 
 // Lambda handler
 exports.handler = async function(event) {
-  //console.log(event)
-  //console.log(JSON.stringify(event))
-  //console.log(JSON.stringify(event, ' ', ''))
-  //console.log(event["queryStringParameters"])
   return new Promise(async (resolve,reject) => {
     // Define headers
     var headers = {
@@ -57,5 +53,3 @@ exports.handler = async function(event) {
     }
   })
 }
-
-//handler(event).then(console.log).catch(console.error)
