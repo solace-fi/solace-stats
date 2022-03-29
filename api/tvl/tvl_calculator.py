@@ -1,20 +1,22 @@
 from api.utils import *
 import asyncio
 
-UWP = {
-    "mainnet": "0x5efC0d9ee3223229Ce3b53e441016efC5BA83435",
-    "polygon": "0xd1108a800363c262774b990e9df75a4287d5c075",
-     "aurora": "0x4A6B0f90597e7429Ce8400fC0E2745Add343df78"
-}
-
-XSLOCKER= {
-    "mainnet": "0x501Ace47c5b0C2099C4464f681c3fa2ECD3146C1",
-    "polygon": "0x501Ace47c5b0C2099C4464f681c3fa2ECD3146C1",
-     "aurora": "0x501Ace47c5b0C2099C4464f681c3fa2ECD3146C1",
-}
-
-SOTERIA = {
-    "mainnet": "0x501ACEbe29eabc346779BcB5Fd62Eaf6Bfb5320E",
+DATA = {
+    "mainnet": {
+        "uwp": ["0x5efC0d9ee3223229Ce3b53e441016efC5BA83435"],
+        "xslocker": ["0x501Ace47c5b0C2099C4464f681c3fa2ECD3146C1"],
+        "soteria": ["0x501ACEbe29eabc346779BcB5Fd62Eaf6Bfb5320E"]
+    },
+    "polygon": {
+        "uwp": ["0xd1108a800363c262774b990e9df75a4287d5c075"],
+        "xslocker": ["0x501Ace47c5b0C2099C4464f681c3fa2ECD3146C1"],
+        "soteria": ["0x501AcEC83d440c00644cA5C48d059e1840852a64"]
+    },
+    "aurora": {
+        "uwp": ["0x4A6B0f90597e7429Ce8400fC0E2745Add343df78"],
+        "xslocker": ["0x501Ace47c5b0C2099C4464f681c3fa2ECD3146C1"],
+        "soteria": []
+    }
 }
 
 ETH_PRICE = 0
@@ -150,73 +152,96 @@ def get_solace_balance(network, address):
     else:
         return {"tvl_usd": 0, "tvl_eth": 0}
 
-async def get_soteria_tvl():
+async def get_soteria_tvl(chain, addresses):
     try:
+        if len(addresses) == 0:
+            return {"tvl_usd": 0, "tvl_eth": 0}
+
         print("\n################# Soteria TVL Calculation #################")
         tvl_usd = 0
         tvl_eth = 0
         # mainnet and polygon tvl calculation via zapper api
         # TODO: need to implement for aurora
-        for k, v in SOTERIA.items():
-            if k == "aurora":
+        for v in addresses:
+            if chain == "aurora":
                 continue
 
-            print(f"\nCalculating tvl for Soteria address {v} in {k} started")
+            print(f"\nCalculating tvl for Soteria address {v} in {chain} started")
             result = get_tvl_by_zapper(v)
             tvl_usd += result["tvl_usd"]
             tvl_eth += result["tvl_eth"]
-            print(f"{k}({v}): usd: {result['tvl_usd']} eth: {result['tvl_eth']}")
-        print("\n#############################################################")
+            print(f"{chain}({v}): usd: {result['tvl_usd']} eth: {result['tvl_eth']}")
         return {"tvl_usd": tvl_usd, "tvl_eth": tvl_eth}  
     except Exception as e:
         raise Exception(f"Error occurred while getting tvl values for Soteria. Error: {e}")
 
-async def get_uwp_tvl():
+async def get_uwp_tvl(chain, addresses):
     try:
+        if len(addresses) == 0:
+            return {"tvl_usd": 0, "tvl_eth": 0}
+
         print("\n################# Underwriting Pool TVL Calculation #################")
         tvl_usd = 0
         tvl_eth = 0
         # mainnet and polygon tvl calculation via zapper api
         # TODO: need to implement for aurora
-        for k, v in UWP.items():
-            if k == "aurora":
+        for v in addresses:
+            if chain == "aurora":
                 continue
 
-            print(f"\nCalculating tvl for underwriting pool address {v} in {k} started")
+            print(f"\nCalculating tvl for underwriting pool address {v} in {chain} started")
             result = get_tvl_by_zapper(v)
             tvl_usd += result["tvl_usd"]
             tvl_eth += result["tvl_eth"]
 
             solace_result = {"tvl_usd": 0, "tvl_eth": 0}
-            if k == "mainnet":
-                solace_result = get_solace_balance(k, v)
+            if chain == "mainnet":
+                solace_result = get_solace_balance(chain, v)
                 tvl_usd += solace_result["tvl_usd"]
                 tvl_eth += solace_result["tvl_eth"]
-            print(f"{k}({v}): usd: {result['tvl_usd'] + solace_result['tvl_usd']} eth: {result['tvl_eth'] + solace_result['tvl_eth']}")
+            print(f"{chain}({v}): usd: {result['tvl_usd'] + solace_result['tvl_usd']} eth: {result['tvl_eth'] + solace_result['tvl_eth']}")
 
-        print("\n#####################################################################")
         return {"tvl_usd": tvl_usd, "tvl_eth": tvl_eth}  
     except Exception as e:
         raise Exception(f"Error occurred while getting tvl values for underwriting pool. Error: {e}")
 
-async def get_stacked_tvl():
+async def get_stacked_tvl(chain, addresses):
     try:
+        if len(addresses) == 0:
+            return {"tvl_usd": 0, "tvl_eth": 0}
+
         print("\n################# Staked SOLACE TVL Calculation #################")
         tvl_usd = 0
         tvl_eth = 0
 
-        for k, v in XSLOCKER.items():
-            print(f"\nCalculating tvl for staked solace address {v} in {k} started")
-            result = get_solace_balance(k, v)
+        for v in addresses:
+            print(f"\nCalculating tvl for staked solace address {v} in {chain} started")
+            result = get_solace_balance(chain, v)
           
-            print(f"{k}({v}): usd: {result['tvl_usd']} eth: {result['tvl_eth']}")
+            print(f"{chain}({v}): usd: {result['tvl_usd']} eth: {result['tvl_eth']}")
             tvl_usd += result["tvl_usd"]
             tvl_eth += result["tvl_eth"]
-        print("\n#####################################################################")
-
         return {"tvl_usd": tvl_usd, "tvl_eth": tvl_eth}  
     except Exception as e:
         raise Exception(f"Error occurred while getting tvl values for staked solace. Error: {e}")
+
+async def get_tvl(chain, apps: dict):
+    tvl_usd = 0
+    tvl_eth = 0
+    for k, v in apps.items():
+        result = {"tvl_usd": 0, "tvl_eth": 0}
+        if k == "uwp":
+            result = await get_uwp_tvl(chain, v)
+        elif k == "xslocker":
+            result = await get_stacked_tvl(chain, v)
+        elif k == "soteria":
+            result = await get_soteria_tvl(chain, v)
+        else:
+            print(f"Unsupported tvl operation for {k}")
+            continue
+        tvl_usd += result["tvl_usd"]
+        tvl_eth += result["tvl_eth"]
+    return {"chain": chain, "tvl_usd": tvl_usd, "tvl_eth": tvl_eth}
 
 async def calculate_tvl():
     global ETH_PRICE
@@ -225,22 +250,24 @@ async def calculate_tvl():
         print("Calculating tvl has been started...")
         ETH_PRICE = fetch_eth_price()
         SOLACE_PRICE = fetch_solace_price()
+        tvl_info = {}
+        tasks = []
+        for chain, addresses in DATA.items():
+            tvl_info[chain] = {"tvl_usd": 0, "tvl_eth": 0}
+            tasks.append(asyncio.create_task(get_tvl(chain, addresses)))
 
-        tasks = [asyncio.create_task(get_soteria_tvl()), asyncio.create_task(get_uwp_tvl()), asyncio.create_task(get_stacked_tvl())]
         completed_tasks, _ = await asyncio.wait(tasks)
-        tvl_usd = 0
-        tvl_eth = 0
-
         for completed_task in completed_tasks:
             result = completed_task.result()
-            tvl_usd += result["tvl_usd"]
-            tvl_eth += result["tvl_eth"]
-        print("Calculating tvl has been finished.")
+            chain = result["chain"]
+            tvl_info[chain]["tvl_usd"] += result["tvl_usd"]
+            tvl_info[chain]["tvl_eth"] += result["tvl_eth"]
+        print("Calculating tvl has been finished.\n")
 
         ETH_PRICE = 0
         SOLACE_PRICE = 0
-        print({"tvl_usd": tvl_usd, "tvl_eth": tvl_eth} )
-        s3_put(S3_TVL_FILE, json.dumps({"tvl_usd": tvl_usd, "tvl_eth": tvl_eth}))
+        print(tvl_info)
+        s3_put(S3_TVL_FILE, json.dumps(tvl_info))
 
     except Exception as e:
         print(f"Error occurred while calculating tvl: Error: {e}")
@@ -249,5 +276,18 @@ def main(event, context):
     asyncio.run(calculate_tvl())
 
 if __name__ == '__main__':
-    main(None, None)
-    #get_tvl_by_zapper("0xd1108a800363c262774b990e9df75a4287d5c075")
+   # main(None, None)
+   chain = "x"
+   tvl = json.loads(s3_get(S3_TVL_FILE))
+   if chain:
+       if chain in tvl:
+            print({"tvl_usd": tvl[chain]["tvl_usd"], "tvl_eth": tvl[chain]["tvl_eth"]})
+       else:
+            print({"tvl_usd": 0, "tvl_eth": 0})
+   else:
+        tvl_usd = 0
+        tvl_eth = 0
+        for k in tvl.keys():
+            tvl_usd += tvl[k]["tvl_usd"]
+            tvl_eth += tvl[k]["tvl_eth"]
+        print( {"tvl_usd": tvl_usd, "tvl_eth": tvl_eth})
