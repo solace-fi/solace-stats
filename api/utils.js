@@ -9,6 +9,7 @@ exports.S3 = S3
 
 const ethers = require('ethers')
 const BN = ethers.BigNumber
+const multicall = require('ethers-multicall')
 
 var s3_cache = {}
 
@@ -97,3 +98,15 @@ async function getProvider(chainID) {
   } else throw { name: 'UnknownError', stack: `Could not create an ethers provider for chainID '${chainNum}'`}
 }
 exports.getProvider = getProvider
+
+// gets a multicall provider for a given chainID
+async function getMulticallProvider(chainID) {
+  const prov = await getProvider(chainID)
+  var mcProvider = new multicall.Provider(prov)
+  await mcProvider.init()
+  var chainNum = chainID - 0
+  if(chainNum == 1313161554) mcProvider._multicallAddress = "0xdc1522872E440cF9cD48E237EAFEfaa5F157Ca1d"
+  if(chainNum == 1313161555) mcProvider._multicallAddress = "0x8f81207F59A4f86d68608fF90b259A0927242967"
+  return mcProvider
+}
+exports.getMulticallProvider = getMulticallProvider

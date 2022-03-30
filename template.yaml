@@ -180,6 +180,22 @@ Resources:
             Path: /xSOLACE/circulatingSupply
             Method: get
             RestApiId: !Ref RestApi
+  VotePowerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SolaceStatsVotePowerFunction
+      Handler: api/votePower/get.handler
+      Runtime: nodejs14.x
+      MemorySize: 1024
+      Timeout: 60
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /votePower
+            Method: get
+            RestApiId: !Ref RestApi
   XSolaceV1BalanceOfFunction:
     Type: AWS::Serverless::Function
     Properties:
