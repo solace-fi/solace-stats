@@ -83,19 +83,22 @@ exports.snsPublishError = snsPublishError
 
 // gets an ethers provider for a given chainID
 async function getProvider(chainID) {
-  const ALCHEMY_CHAINS = [1,4,5,42,137,80001]
-  var chainNum = chainID - 0
-  if(ALCHEMY_CHAINS.includes(chainNum)) {
-    var alchemyKey = (await s3GetObjectPromise({
-      Bucket: 'stats.solace.fi.data',
-      Key: 'alchemy_key.txt'
-    }, cache=true)).trim()
-    return new ethers.providers.AlchemyProvider(chainNum, alchemyKey)
-  } else if(chainNum == 1313161554) {
-    return new ethers.providers.JsonRpcProvider("https://mainnet.aurora.dev")
-  } else if(chainNum == 1313161555) {
-    return new ethers.providers.JsonRpcProvider("https://testnet.aurora.dev")
-  } else throw { name: 'UnknownError', stack: `Could not create an ethers provider for chainID '${chainNum}'`}
+  let providers = JSON.parse(await s3GetObjectPromise({
+    Bucket: 'stats.solace.fi.data',
+    Key: 'providers.json'
+  }, cache=true))
+  if(!Object(providers).hasOwnProperty(chainID)) {
+    throw { name: 'UnknownError', stack: `Could not create an ethers provider for chainID '${chainID}'`}
+    return
+  }
+  let provider = providers[chainID]
+  if(provider.type == "Alchemy") {
+    return new ethers.providers.AlchemyProvider(chainID, provider.key)
+  }
+  if(provider.type == "JsonRpc") {
+    return new ethers.providers.JsonRpcProvider(provider.url)
+  }
+  throw { name: 'UnknownError', stack: `Could not create an ethers provider for chainID '${chainID}'`}
 }
 exports.getProvider = getProvider
 

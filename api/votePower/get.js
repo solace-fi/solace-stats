@@ -67,16 +67,9 @@ async function handle() {
   return `{\n    ${votePowersList.map(vp => `"${vp.account}": ${formatUnits(vp.balance, 18)}`).join(',\n    ')}\n}`
 }
 
-async function prefetch() {
-  await Promise.all([
-    s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'alchemy_key.txt'}, cache=true)
-  ])
-}
-
 // Lambda handler
 exports.handler = async function(event) {
   try {
-    await prefetch()
     var res = await handle()
     return {
       statusCode: 200,

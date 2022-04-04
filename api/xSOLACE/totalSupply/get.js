@@ -62,7 +62,7 @@ async function handle(event) {
 
 async function prefetch() {
   await Promise.all([
-    s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'alchemy_key.txt'}, cache=true),
+    s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'providers.json'}, cache=true),
     s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'xSOLACE/totalSupply/skip_addresses.json'}, cache=false)
   ])
 }
