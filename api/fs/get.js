@@ -1,4 +1,4 @@
-const { S3, snsPublishError } = require("./../utils")
+const { S3, snsPublishError } = require("./../utils/utils")
 
 // Lambda handler
 exports.handler = async function(event) {

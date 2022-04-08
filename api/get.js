@@ -1,4 +1,4 @@
-const { s3GetObjectPromise, snsPublishError } = require("./utils")
+const { s3GetObjectPromise, snsPublishError } = require("./utils/utils")
 
 // Define headers
 const headers = {

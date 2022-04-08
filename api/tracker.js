@@ -1,6 +1,6 @@
 // tracks stats over time
 
-const { snsPublishError } = require("./utils")
+const { snsPublishError } = require("./utils/utils")
 const { track_uwp_mainnet } = require("./uwp/mainnet")
 const { track_uwp_aurora } = require("./uwp/aurora")
 const { track_uwp_polygon } = require("./uwp/polygon")

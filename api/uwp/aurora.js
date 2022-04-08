@@ -1,9 +1,7 @@
 // tracks assets in aurora uwp over time
 
-//const { getProvider, s3GetObjectPromise, s3PutObjectPromise, snsPublishError } = require("./api/utils")
-//const { withBackoffRetries, formatTimestamp, fetchBlock, fetchBalances, fetchBalanceOrZero, fetchSupplyOrZero, fetchReservesOrZero, fetchUniswapV2PriceOrZero, fetchUniswapV3PriceOrZero } = require("./api/uwp/utils")
-const { getProvider, s3GetObjectPromise, s3PutObjectPromise, snsPublishError } = require("./../utils")
-const { withBackoffRetries, formatTimestamp, fetchBlock, fetchBalances, fetchBalanceOrZero, fetchSupplyOrZero, fetchReservesOrZero, fetchUniswapV2PriceOrZero, fetchUniswapV3PriceOrZero } = require("./utils")
+const { getProvider, s3GetObjectPromise, s3PutObjectPromise, snsPublishError, withBackoffRetries, formatTimestamp, fetchBlock } = require("./../utils/utils")
+const { fetchBalances, fetchBalanceOrZero, fetchSupplyOrZero, fetchReservesOrZero, fetchUniswapV2PriceOrZero, fetchUniswapV3PriceOrZero } = require("./../utils/priceUtils")
 const ethers = require('ethers')
 const BN = ethers.BigNumber
 const formatUnits = ethers.utils.formatUnits
@@ -118,8 +116,8 @@ async function track_uwp_aurora() {
   await prefetch()
   var csv = await createCSV()
   await Promise.all([
-    s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/uwp_aurora.csv', Body: csv }),
-    s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/uwp_aurora.csv', Body: csv })
+    s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/uwp_aurora.csv', Body: csv, ContentType: "text/csv" }),
+    s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/uwp_aurora.csv', Body: csv, ContentType: "text/csv" })
   ])
   console.log('done tracking uwp aurora')
 }

@@ -1,67 +1,10 @@
-//const { getProvider, s3GetObjectPromise, s3PutObjectPromise, snsPublishError } = require("./api/utils")
 const ethers = require('ethers')
 const BN = ethers.BigNumber
 const formatUnits = ethers.utils.formatUnits
-//var exports = {}
+
+const { withBackoffRetries } = require("./utils")
 
 const ETH_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-
-// returns a promise that resolves after a specified wait time
-async function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-exports.delay = delay
-
-// returns the result of a given function call
-// gracefully handles request timeouts and retries
-const MIN_RETRY_DELAY = 10000
-const RETRY_BACKOFF_FACTOR = 2
-const MAX_RETRY_DELAY = 100000
-async function withBackoffRetries(f, retryCount = 7, jitter = 10000) {
-  return new Promise(async (resolve, reject) => {
-    //await delay(Math.floor(Math.random() * jitter))
-    let nextWaitTime = MIN_RETRY_DELAY
-    let i = 0
-    while (true) {
-      try {
-        var res = await f()
-        resolve(res)
-        break
-      } catch (error) {
-        i++
-        if(!error.toString().toLowerCase().includes("timeout")) {
-          reject(error)
-          break
-        }
-        if (i >= retryCount) {
-          console.log('timeout. over max retries')
-          reject(error)
-          break
-        }
-        console.log('timeout. retrying')
-        await delay(nextWaitTime + Math.floor(Math.random() * jitter))
-        nextWaitTime = Math.min(MAX_RETRY_DELAY, RETRY_BACKOFF_FACTOR * nextWaitTime)
-      }
-    }
-  })
-}
-exports.withBackoffRetries = withBackoffRetries
-
-// formats a unix timestamp (in seconds) to UTC string representation
-// mm:dd:yyyy hh:mm:ss
-function formatTimestamp(timestamp) {
-  var d = new Date(timestamp * 1000)
-  return `${d.getUTCMonth()+1}/${d.getUTCDate()}/${d.getUTCFullYear()} ${d.getUTCHours()}:${d.getUTCMinutes()}:${d.getUTCSeconds()}`
-}
-exports.formatTimestamp = formatTimestamp
-
-// fetch a block
-async function fetchBlock(provider, blockTag) {
-  return new Promise((resolve, reject) => {
-    withBackoffRetries(() => provider.getBlock(blockTag)).then(resolve)
-  })
-}
-exports.fetchBlock = fetchBlock
 
 // returns the balance of a holder for a list of tokens
 // result is an array
@@ -138,6 +81,7 @@ exports.fetchUniswapV2PriceOrZero = fetchUniswapV2PriceOrZero
 
 const ONE_ETHER = BN.from("1000000000000000000")
 const x192 = BN.from("0x01000000000000000000000000000000000000000000000000")
+
 // fetch the price of a token in a uniswap v3 pool
 async function fetchUniswapV3PriceOrZero(pool, oneZero, decimals0, decimals1, blockTag) {
   return new Promise((resolve, reject) => {
