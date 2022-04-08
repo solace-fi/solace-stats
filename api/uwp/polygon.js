@@ -62,7 +62,7 @@ async function createCSV() {
   var endBlock = await provider.getBlockNumber()
   var blockStep = 10000
   // checkpoint
-  await s3GetObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/uwp_polygon.csv'}).then(res => {
+  await s3GetObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/uwp/polygon.csv'}).then(res => {
     csv = res
     var rows = csv.split('\n')
     var lastBlock = rows[rows.length-2].split(',')[0]-0
@@ -122,8 +122,8 @@ async function track_uwp_polygon() {
   await prefetch()
   var csv = await createCSV()
   await Promise.all([
-    s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/uwp_polygon.csv', Body: csv, ContentType: "text/csv" }),
-    s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/uwp_polygon.csv', Body: csv, ContentType: "text/csv" })
+    s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/uwp/polygon.csv', Body: csv, ContentType: "text/csv" }),
+    s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/uwp/polygon.csv', Body: csv, ContentType: "text/csv" })
   ])
   console.log('done tracking uwp polygon')
 }
