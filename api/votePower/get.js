@@ -1,4 +1,4 @@
-const { getMulticallProvider, s3GetObjectPromise, snsPublishError } = require("./../utils")
+const { getMulticallProvider, s3GetObjectPromise, snsPublishError } = require("./../utils/utils")
 const ethers = require('ethers')
 const BN = ethers.BigNumber
 const formatUnits = ethers.utils.formatUnits

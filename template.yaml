@@ -290,6 +290,20 @@ Resources:
           Type: Schedule
           Properties:
             Schedule: rate(60 minutes)
+  SolaceStatsTrackerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SolaceStatsTrackerFunction
+      Handler: api/tracker.handler
+      Runtime: nodejs14.x
+      MemorySize: 1024
+      Timeout: 900
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        ScheduledEvent:
+          Type: Schedule
+          Properties:
+            Schedule: rate(60 minutes)
   FsFunction:
     Type: AWS::Serverless::Function
     Properties:
