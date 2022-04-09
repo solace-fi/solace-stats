@@ -62,22 +62,28 @@ async function fetchReservesOrZero(pair, blockTag) {
 }
 exports.fetchReservesOrZero = fetchReservesOrZero
 
-// fetch the price of a token in a uniswap v3 pool
+// fetch the price of a token in a uniswap v2 pool
 async function fetchUniswapV2PriceOrZero(pair, oneZero, decimals0, decimals1, blockTag) {
   return new Promise((resolve, reject) => {
     withBackoffRetries(() => pair.getReserves({blockTag:blockTag})).then(reserves => {
-      if(reserves._reserve0.eq(0) || reserves._reserve1.eq(0)) resolve(0.0)
-      else {
-        var amt0 = (formatUnits(reserves._reserve0, decimals0) - 0)
-        var amt1 = (formatUnits(reserves._reserve1, decimals1) - 0)
-        // oneZero == true -> price of token 1 in terms of token 0
-        var price = oneZero ? amt0/amt1 : amt1/amt0
-        resolve(price)
-      }
+      resolve(calculateUniswapV2PriceOrZero(reserves._reserve0, reserves._reserve1, oneZero, decimals0, decimals1))
     }).catch(()=>{resolve(0.0)})
   })
 }
 exports.fetchUniswapV2PriceOrZero = fetchUniswapV2PriceOrZero
+
+// given uniswap v2 pool reserves, calculates the price of a token
+function calculateUniswapV2PriceOrZero(reserve0, reserve1, oneZero, decimals0, decimals1) {
+  if(reserve0.eq(0) || reserve1.eq(0)) return 0.0
+  else {
+    var amt0 = (formatUnits(reserve0, decimals0) - 0)
+    var amt1 = (formatUnits(reserve1, decimals1) - 0)
+    // oneZero == true -> price of token 1 in terms of token 0
+    var price = oneZero ? amt0/amt1 : amt1/amt0
+    return price
+  }
+}
+exports.calculateUniswapV2PriceOrZero = calculateUniswapV2PriceOrZero
 
 const ONE_ETHER = BN.from("1000000000000000000")
 const x192 = BN.from("0x01000000000000000000000000000000000000000000000000")

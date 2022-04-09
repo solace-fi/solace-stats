@@ -102,7 +102,6 @@ async function prefetch() {
     s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'abi/other/UniswapV2Pair.json'}, cache=true),
     s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'abi/other/UniswapV3Pool.json'}, cache=true),
   ])
-  //tokens2 = tokenList.map(token => new ethers.Contract(token.address, erc20Abi, provider))
   for(var i = 0; i < tokenList.length; ++i) {
     tokenList[i].contract = new ethers.Contract(tokenList[i].address, erc20Abi, provider)
     tokenDict[tokenList[i].symbol] = tokenList[i]

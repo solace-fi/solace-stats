@@ -4,6 +4,9 @@ const { snsPublishError } = require("./utils/utils")
 const { track_uwp_mainnet } = require("./uwp/mainnet")
 const { track_uwp_aurora } = require("./uwp/aurora")
 const { track_uwp_polygon } = require("./uwp/polygon")
+const { track_markets_mainnet } = require("./markets/mainnet")
+const { track_markets_aurora } = require("./markets/aurora")
+const { track_markets_polygon } = require("./markets/polygon")
 
 // Define headers
 const headers = {
@@ -13,10 +16,13 @@ const headers = {
 }
 
 async function track() {
-  await Promise.all([
+  return await Promise.all([
     track_uwp_mainnet(),
     track_uwp_aurora(),
     track_uwp_polygon(),
+    track_markets_mainnet(),
+    track_markets_aurora(),
+    track_markets_polygon(),
   ])
 }
 
