@@ -28,10 +28,14 @@ async function getXsLocks(chainID) {
   let indices = range(0, supply)
   let xslockIDs = await mcProvider.all(indices.map(index => xsLockerMC.tokenByIndex(index)), {blockTag:blockTag})
   xslockIDs.sort(sortBNs)
-  let xslocks = await mcProvider.all(xslockIDs.map(xslockID => xsLockerMC.locks(xslockID)), {blockTag:blockTag})
+  let [xslocks, owners] = await Promise.all([
+    mcProvider.all(xslockIDs.map(xslockID => xsLockerMC.locks(xslockID)), {blockTag:blockTag}),
+    mcProvider.all(xslockIDs.map(xslockID => xsLockerMC.ownerOf(xslockID)), {blockTag:blockTag})
+  ])
   xslocks = indices.map(i => {
     return {
       xsLockID: xslockIDs[i].toString(),
+      owner: owners[i],
       amount: xslocks[i].amount.toString(),
       end: xslocks[i].end.toString()
     }
