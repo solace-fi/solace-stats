@@ -180,6 +180,22 @@ Resources:
             Path: /xSOLACE/circulatingSupply
             Method: get
             RestApiId: !Ref RestApi
+  XSLockerListFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SolaceStatsXSLockerListFunction
+      Handler: api/xsLocker/list.handler
+      Runtime: nodejs14.x
+      MemorySize: 1024
+      Timeout: 60
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /xsLocker/list
+            Method: get
+            RestApiId: !Ref RestApi
   VotePowerFunction:
     Type: AWS::Serverless::Function
     Properties:
