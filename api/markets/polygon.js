@@ -75,13 +75,16 @@ async function prefetch() {
 }
 
 async function track_markets_polygon() {
-  console.log('start tracking markets polygon')
-  await prefetch()
-  var csv = await createCSV()
-  await Promise.all([
-    s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/markets/polygon.csv', Body: csv, ContentType: "text/csv" }),
-    s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/markets/polygon.csv', Body: csv, ContentType: "text/csv" })
-  ])
-  console.log('done tracking markets polygon')
+  return new Promise(async (resolve) => {
+    console.log('start tracking markets polygon')
+    await prefetch()
+    var csv = await createCSV()
+    await Promise.all([
+      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/markets/polygon.csv', Body: csv, ContentType: "text/csv" }),
+      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/markets/polygon.csv', Body: csv, ContentType: "text/csv" })
+    ])
+    console.log('done tracking markets polygon')
+    resolve(csv)
+  })
 }
 exports.track_markets_polygon = track_markets_polygon

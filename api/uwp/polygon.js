@@ -117,13 +117,16 @@ async function prefetch() {
 }
 
 async function track_uwp_polygon() {
-  console.log('start tracking uwp polygon')
-  await prefetch()
-  var csv = await createCSV()
-  await Promise.all([
-    s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/uwp/polygon.csv', Body: csv, ContentType: "text/csv" }),
-    s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/uwp/polygon.csv', Body: csv, ContentType: "text/csv" })
-  ])
-  console.log('done tracking uwp polygon')
+  return new Promise(async (resolve) => {
+    console.log('start tracking uwp polygon')
+    await prefetch()
+    var csv = await createCSV()
+    await Promise.all([
+      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/uwp/polygon.csv', Body: csv, ContentType: "text/csv" }),
+      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/uwp/polygon.csv', Body: csv, ContentType: "text/csv" })
+    ])
+    console.log('done tracking uwp polygon')
+    resolve(csv)
+  })
 }
 exports.track_uwp_polygon = track_uwp_polygon

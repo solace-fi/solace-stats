@@ -70,13 +70,16 @@ async function prefetch() {
 }
 
 async function track_markets_aurora() {
-  console.log('start tracking markets aurora')
-  await prefetch()
-  var csv = await createCSV()
-  await Promise.all([
-    s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/markets/aurora.csv', Body: csv, ContentType: "text/csv" }),
-    s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/markets/aurora.csv', Body: csv, ContentType: "text/csv" })
-  ])
-  console.log('done tracking markets aurora')
+  return new Promise(async (resolve) => {
+    console.log('start tracking markets aurora')
+    await prefetch()
+    var csv = await createCSV()
+    await Promise.all([
+      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/markets/aurora.csv', Body: csv, ContentType: "text/csv" }),
+      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/markets/aurora.csv', Body: csv, ContentType: "text/csv" })
+    ])
+    console.log('done tracking markets aurora')
+    resolve(csv)
+  })
 }
 exports.track_markets_aurora = track_markets_aurora

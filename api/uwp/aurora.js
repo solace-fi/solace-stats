@@ -112,13 +112,16 @@ async function prefetch() {
 }
 
 async function track_uwp_aurora() {
-  console.log('start tracking uwp aurora')
-  await prefetch()
-  var csv = await createCSV()
-  await Promise.all([
-    s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/uwp/aurora.csv', Body: csv, ContentType: "text/csv" }),
-    s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/uwp/aurora.csv', Body: csv, ContentType: "text/csv" })
-  ])
-  console.log('done tracking uwp aurora')
+  return new Promise(async (resolve) => {
+    console.log('start tracking uwp aurora')
+    await prefetch()
+    var csv = await createCSV()
+    await Promise.all([
+      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/uwp/aurora.csv', Body: csv, ContentType: "text/csv" }),
+      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/uwp/aurora.csv', Body: csv, ContentType: "text/csv" })
+    ])
+    console.log('done tracking uwp aurora')
+    resolve(csv)
+  })
 }
 exports.track_uwp_aurora = track_uwp_aurora

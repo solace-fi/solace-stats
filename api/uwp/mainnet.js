@@ -107,13 +107,16 @@ async function prefetch() {
 }
 
 async function track_uwp_mainnet() {
-  console.log('start tracking uwp mainnet')
-  await prefetch()
-  var csv = await createCSV()
-  await Promise.all([
-    s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/uwp/mainnet.csv', Body: csv, ContentType: "text/csv" }),
-    s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/uwp/mainnet.csv', Body: csv, ContentType: "text/csv" })
-  ])
-  console.log('done tracking uwp mainnet')
+  return new Promise(async (resolve) => {
+    console.log('start tracking uwp mainnet')
+    await prefetch()
+    var csv = await createCSV()
+    await Promise.all([
+      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/uwp/mainnet.csv', Body: csv, ContentType: "text/csv" }),
+      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/uwp/mainnet.csv', Body: csv, ContentType: "text/csv" })
+    ])
+    console.log('done tracking uwp mainnet')
+    resolve(csv)
+  })
 }
 exports.track_uwp_mainnet = track_uwp_mainnet
