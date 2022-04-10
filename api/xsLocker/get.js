@@ -4,18 +4,10 @@ const BN = ethers.BigNumber
 const formatUnits = ethers.utils.formatUnits
 const multicall = require('ethers-multicall')
 
-// Define headers
-const headers = {
-  "Content-Type": "application/json",
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "Content-Type",
-  "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
-}
-
 const CHAIN_IDS = [1,1313161554,137] // mainnet, aurora, polygon
 const XSLOCKER_ADDRESS = "0x501Ace47c5b0C2099C4464f681c3fa2ECD3146C1"
 
-async function getXsLocks(chainID) {
+async function getXsLocksOfChain(chainID) {
   let [mcProvider, xsLockerABI] = await Promise.all([
     getMulticallProvider(chainID),
     s3GetObjectPromise({Bucket:'stats.solace.fi.data',Key:'abi/staking/xsLocker.json'}, cache=true).then(JSON.parse)
@@ -34,7 +26,7 @@ async function getXsLocks(chainID) {
   ])
   xslocks = indices.map(i => {
     return {
-      xsLockID: xslockIDs[i].toString(),
+      xslockID: xslockIDs[i].toString(),
       owner: owners[i],
       amount: xslocks[i].amount.toString(),
       end: xslocks[i].end.toString()
@@ -43,13 +35,55 @@ async function getXsLocks(chainID) {
   return xslocks
 }
 
-async function handle() {
-  let chainResults = await Promise.all(CHAIN_IDS.map(getXsLocks))
+async function getXsLocks() {
+  // get locks as object
+  let chainResults = await Promise.all(CHAIN_IDS.map(getXsLocksOfChain))
   let res = {}
   for(var i = 0; i < CHAIN_IDS.length; ++i) {
     res[CHAIN_IDS[i]+""] = chainResults[i]
   }
-  return JSON.stringify(res)
+  return res
+}
+
+async function handle(event) {
+  // Define headers
+  let headers = {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
+  }
+  let obj = await getXsLocks()
+  // default: return as json
+  if(!event || !event["queryStringParameters"] || !event["queryStringParameters"]["format"] || event["queryStringParameters"]["format"] != "csv") {
+    return [headers, JSON.stringify(obj)]
+  }
+  // optionally return as csv
+  else {
+    headers["Content-Type"] = "text/csv"
+    return [headers, jsonToCsv(obj)]
+  }
+}
+
+function jsonToCsv(obj) {
+  let s = `chainID,xslockID,owner,amount,end\n`
+  CHAIN_IDS.forEach(chainID => {
+    obj[chainID].forEach(xslock => {
+      s = `${s}${chainID},${xslock.xslockID},${xslock.owner},${xslock.amount},${formatEnd(xslock.end)}\n`
+    })
+  })
+  return s
+}
+
+function formatEnd(end) {
+  let time = new Date(parseInt(end) * 1000)
+  let y = `${time.getUTCFullYear()}`
+  let m = `${time.getUTCMonth()+1}`
+  if(m.length == 1) m = `0${m}`
+  let d = `${time.getUTCDate()}`
+  if(d.length == 1) d = `0${d}`
+  let s = `${y}-${m}-${d}`
+  return s
 }
 
 async function prefetch() {
@@ -60,7 +94,7 @@ async function prefetch() {
 exports.handler = async function(event) {
   try {
     await prefetch()
-    let res = await handle()
+    let [headers, res] = await handle(event)
     return {
       statusCode: 200,
       headers: headers,
