@@ -36,14 +36,17 @@ async function getXsLocksOfChain(chainID) {
 }
 
 async function getXsLocks() {
-  // get locks as object
-  let chainResults = await Promise.all(CHAIN_IDS.map(getXsLocksOfChain))
-  let res = {}
-  for(var i = 0; i < CHAIN_IDS.length; ++i) {
-    res[CHAIN_IDS[i]+""] = chainResults[i]
-  }
-  return res
+  return new Promise(async (resolve) => {
+    // get locks as object
+    let chainResults = await Promise.all(CHAIN_IDS.map(getXsLocksOfChain))
+    let res = {}
+    for(var i = 0; i < CHAIN_IDS.length; ++i) {
+      res[CHAIN_IDS[i]+""] = chainResults[i]
+    }
+    resolve(res)
+  })
 }
+exports.getXsLocks = getXsLocks
 
 async function handle(event) {
   // Define headers
@@ -69,7 +72,7 @@ function jsonToCsv(obj) {
   let s = `chainID,xslockID,owner,amount,end\n`
   CHAIN_IDS.forEach(chainID => {
     obj[chainID].forEach(xslock => {
-      s = `${s}${chainID},${xslock.xslockID},${xslock.owner},${xslock.amount},${formatEnd(xslock.end)}\n`
+      s = `${s}${chainID},${xslock.xslockID},${xslock.owner},${formatUnits(xslock.amount,18)},${formatEnd(xslock.end)}\n`
     })
   })
   return s

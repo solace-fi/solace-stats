@@ -84,6 +84,22 @@ Resources:
             Path: /
             Method: get
             RestApiId: !Ref RestApi
+  AnalyticsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SolaceStatsAnalyticsFunction
+      Handler: api/analytics/get.handler
+      Runtime: nodejs14.x
+      MemorySize: 1024
+      Timeout: 60
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /analytics
+            Method: get
+            RestApiId: !Ref RestApi
   SolaceBalanceOfFunction:
     Type: AWS::Serverless::Function
     Properties:
