@@ -170,3 +170,21 @@ async function fetchBlock(provider, blockTag) {
   })
 }
 exports.fetchBlock = fetchBlock
+
+// returns an array of integers starting at start, incrementing, and stopping before stop
+function range(start, stop) {
+  let arr = [];
+  for(var i = start; i < stop; ++i) {
+    arr.push(i);
+  }
+  return arr;
+}
+exports.range = range
+
+// sorts BigNumbers ascending
+function sortBNs(a, b) {
+  if(a.lt(b)) return -1;
+  if(a.gt(b)) return 1;
+  return 0;
+}
+exports.sortBNs = sortBNs

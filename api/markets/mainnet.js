@@ -64,13 +64,16 @@ async function prefetch() {
 }
 
 async function track_markets_mainnet() {
-  console.log('start tracking markets mainnet')
-  await prefetch()
-  var csv = await createCSV()
-  await Promise.all([
-    s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/markets/mainnet.csv', Body: csv, ContentType: "text/csv" }),
-    s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/markets/mainnet.csv', Body: csv, ContentType: "text/csv" })
-  ])
-  console.log('done tracking markets mainnet')
+  return new Promise(async (resolve) => {
+    console.log('start tracking markets mainnet')
+    await prefetch()
+    var csv = await createCSV()
+    await Promise.all([
+      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/markets/mainnet.csv', Body: csv, ContentType: "text/csv" }),
+      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/markets/mainnet.csv', Body: csv, ContentType: "text/csv" })
+    ])
+    console.log('done tracking markets mainnet')
+    resolve(csv)
+  })
 }
 exports.track_markets_mainnet = track_markets_mainnet
