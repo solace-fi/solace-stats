@@ -158,10 +158,17 @@ exports.withBackoffRetries = withBackoffRetries
 // formats a unix timestamp (in seconds) to UTC string representation
 // mm:dd:yyyy hh:mm:ss
 function formatTimestamp(timestamp) {
-  var d = new Date(timestamp * 1000)
-  return `${d.getUTCMonth()+1}/${d.getUTCDate()}/${d.getUTCFullYear()} ${d.getUTCHours()}:${d.getUTCMinutes()}:${d.getUTCSeconds()}`
+  let d = new Date(timestamp * 1000)
+  return `${d.getUTCMonth()+1}/${d.getUTCDate()}/${d.getUTCFullYear()} ${leftZeroPad(d.getUTCHours(),2)}:${leftZeroPad(d.getUTCMinutes(),2)}:${leftZeroPad(d.getUTCSeconds(),2)}`
 }
 exports.formatTimestamp = formatTimestamp
+
+function leftZeroPad(s, l) {
+  let s2 = `${s}`
+  while(s2.length < l) s2 = '0' + s2
+  return s2
+}
+exports.leftZeroPad = leftZeroPad
 
 // fetch a block
 async function fetchBlock(provider, blockTag) {
