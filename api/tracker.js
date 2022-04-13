@@ -3,6 +3,7 @@
 const { snsPublishError } = require("./utils/utils")
 const { track_uwp } = require("./uwp/tracker")
 const { track_markets } = require("./markets/tracker")
+const { track_community } = require("./community/tracker")
 
 // Define headers
 const headers = {
@@ -15,6 +16,7 @@ async function track() {
   return await Promise.all([
     track_uwp(),
     track_markets(),
+    track_community(),
   ])
 }
 

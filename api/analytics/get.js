@@ -12,15 +12,17 @@ const headers = {
 }
 
 async function handle() {
-  let [xslocker, markets, uwp] = await Promise.all([
+  let [xslocker, markets, uwp, community] = await Promise.all([
     getXsLocks(),
     s3GetObjectPromise({Bucket:'stats.solace.fi.data', Key:'public/markets/all.json'}).then(JSON.parse),
-    s3GetObjectPromise({Bucket:'stats.solace.fi.data', Key:'public/uwp/all.json'}).then(JSON.parse)
+    s3GetObjectPromise({Bucket:'stats.solace.fi.data', Key:'public/uwp/all.json'}).then(JSON.parse),
+    s3GetObjectPromise({Bucket:'stats.solace.fi.data', Key:'public/community/followers.json'}).then(JSON.parse)
   ])
   let res = {
     markets: markets,
     uwp: uwp,
-    xslocker: xslocker
+    xslocker: xslocker,
+    community: community
   }
   return JSON.stringify(res)
 }
