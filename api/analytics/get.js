@@ -16,7 +16,7 @@ async function handle() {
     getXsLocks(),
     s3GetObjectPromise({Bucket:'stats.solace.fi.data', Key:'public/markets/all.json'}).then(JSON.parse),
     s3GetObjectPromise({Bucket:'stats.solace.fi.data', Key:'public/uwp/all.json'}).then(JSON.parse),
-    s3GetObjectPromise({Bucket:'stats.solace.fi.data', Key:'public/community/followers.csv'})
+    s3GetObjectPromise({Bucket:'stats.solace.fi.data', Key:'public/community/followers.json'}).then(JSON.parse)
   ])
   let res = {
     markets: markets,

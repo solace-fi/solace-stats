@@ -7,14 +7,14 @@ const Discord = require('discord.js');
 var initialized = false
 var config
 
-async function fetchCsv() {
+async function fetchHistory() {
   // from scratch
-  let csv = "timestamp,timestring,twitter followers, discord followers\n"
+  let arr = []
   // checkpoint
-  await (s3GetObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/community/followers.csv'}, cache=false).then(res => {
-    csv = res
+  await (s3GetObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/community/followers.json'}, cache=false).then(res => {
+    arr = JSON.parse(res)
   }).catch(()=>{}))
-  return csv
+  return arr
 }
 
 async function track_twitter() {
@@ -45,18 +45,24 @@ async function track_community() {
     await prefetch()
     let timestamp = Math.floor(Date.now()/1000)
     let timestring = formatTimestamp(timestamp)
-    let [csv, twitterFollowers, discordFollowers] = await Promise.all([
-      fetchCsv(),
+    let [history, twitterFollowers, discordFollowers] = await Promise.all([
+      fetchHistory(),
       track_twitter(),
       track_discord()
     ])
-    let res = `${csv}${timestamp},${timestring},${twitterFollowers},${discordFollowers}\n`
+    history.push({
+      timestamp: timestamp,
+      timestring: timestring,
+      Twitter: twitterFollowers,
+      Discord: discordFollowers
+    })
+    history = JSON.stringify(history)
     await Promise.all([
-      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/community/followers.csv', Body: res, ContentType: "text/csv" }),
-      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/community/followers.csv', Body: res, ContentType: "text/csv" })
+      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/community/followers.json', Body: history, ContentType: "application/json" }),
+      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/community/followers.json', Body: history, ContentType: "application/json" })
     ])
     console.log('done tracking community')
-    resolve(res)
+    resolve(history)
   })
 }
 exports.track_community = track_community
