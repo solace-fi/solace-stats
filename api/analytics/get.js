@@ -2,6 +2,7 @@
 
 const { s3GetObjectPromise, snsPublishError } = require("./../utils/utils")
 const { getXsLocks } = require("./../xsLocker/get")
+const { track_policies } = require("./../swc/tracker")
 
 // Define headers
 const headers = {
@@ -12,17 +13,19 @@ const headers = {
 }
 
 async function handle() {
-  let [xslocker, markets, uwp, community] = await Promise.all([
+  let [xslocker, markets, uwp, community, swc] = await Promise.all([
     getXsLocks(),
     s3GetObjectPromise({Bucket:'stats.solace.fi.data', Key:'public/markets/all.json'}).then(JSON.parse),
     s3GetObjectPromise({Bucket:'stats.solace.fi.data', Key:'public/uwp/all.json'}).then(JSON.parse),
-    s3GetObjectPromise({Bucket:'stats.solace.fi.data', Key:'public/community/followers.json'}).then(JSON.parse)
+    s3GetObjectPromise({Bucket:'stats.solace.fi.data', Key:'public/community/followers.json'}).then(JSON.parse),
+    track_policies()
   ])
   let res = {
     markets: markets,
     uwp: uwp,
     xslocker: xslocker,
-    community: community
+    community: community,
+    swc: swc
   }
   return JSON.stringify(res)
 }

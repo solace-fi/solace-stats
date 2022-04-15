@@ -4,6 +4,8 @@ const { snsPublishError } = require("./utils/utils")
 const { track_uwp } = require("./uwp/tracker")
 const { track_markets } = require("./markets/tracker")
 const { track_community } = require("./community/tracker")
+const { track_swcv1 } = require("./swc/swcv1")
+const { track_swcv2 } = require("./swc/swcv2")
 
 // Define headers
 const headers = {
@@ -17,6 +19,8 @@ async function track() {
     track_uwp(),
     track_markets(),
     track_community(),
+    track_swcv1(),
+    track_swcv2()
   ])
 }
 
