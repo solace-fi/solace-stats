@@ -13,13 +13,14 @@ const headers = {
 }
 
 async function handle() {
-  let [xslocker, markets, uwp, community, swc, positions] = await Promise.all([
+  let [xslocker, markets, uwp, community, swc, positions, series] = await Promise.all([
     getXsLocks(),
     s3GetObjectPromise({Bucket:'stats.solace.fi.data', Key:'public/markets/all.json'}).then(JSON.parse),
     s3GetObjectPromise({Bucket:'stats.solace.fi.data', Key:'public/uwp/all.json'}).then(JSON.parse),
     s3GetObjectPromise({Bucket:'stats.solace.fi.data', Key:'public/community/followers.json'}).then(JSON.parse),
     track_policies(),
-    s3GetObjectPromise({Bucket:'stats.solace.fi.data', Key:'positions-cache.json'}).then(JSON.parse)
+    s3GetObjectPromise({Bucket:'risk-data.solace.fi.data', Key:'positions-cache.json'}).then(JSON.parse),
+    s3GetObjectPromise({Bucket:'risk-data.solace.fi.data', Key:'current-rate-data/series.json'}).then(JSON.parse)
   ])
   let res = {
     markets: markets,
@@ -27,7 +28,8 @@ async function handle() {
     xslocker: xslocker,
     community: community,
     swc: swc,
-    positions: positions
+    positions: positions,
+    series: series
   }
   return JSON.stringify(res)
 }
