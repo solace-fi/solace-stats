@@ -1,4 +1,4 @@
-const { getProvider, s3GetObjectPromise, snsPublishError } = require("./../../utils")
+const { getProvider, s3GetObjectPromise, snsPublishError } = require("./../../utils/utils")
 const ethers = require('ethers')
 const BN = ethers.BigNumber
 const formatUnits = ethers.utils.formatUnits
@@ -19,8 +19,16 @@ async function getTotalSupply() {
     getProvider(1)
   ])
   var xsolacev1 = new ethers.Contract(XSOLACE_V1_ADDRESS, ERC20ABI, provider)
-  var supply = await xsolacev1.totalSupply()
-  return supply
+  var err;
+  for(var i = 0; i < 5; ++i) {
+    try {
+      var supply = await xsolacev1.totalSupply()
+      return supply
+    } catch(e) {
+      err = e
+    }
+  }
+  throw err
 }
 
 async function handle(event) {

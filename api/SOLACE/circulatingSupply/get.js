@@ -1,7 +1,8 @@
-const { getProvider, s3GetObjectPromise, snsPublishError } = require("./../../utils/utils")
+const { getProvider, getMulticallProvider, s3GetObjectPromise, snsPublishError } = require("./../../utils/utils")
 const ethers = require('ethers')
 const BN = ethers.BigNumber
 const formatUnits = ethers.utils.formatUnits
+const multicall = require('ethers-multicall')
 
 // Define headers
 const headers = {
@@ -26,16 +27,29 @@ function verifyChainID(params) {
 }
 
 async function getCirculatingSupply(chainID) {
-  var [skipAddresses, provider] = await Promise.all([
+  var [skipAddresses, mcProvider] = await Promise.all([
     s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'SOLACE/circulatingSupply/skip_addresses.json'}, cache=true).then(JSON.parse),
-    getProvider(chainID)
+    getMulticallProvider(chainID)
   ])
-  var solace = new ethers.Contract(SOLACE_ADDRESS, ERC20ABI, provider)
-  var blockTag = await provider.getBlockNumber()
-  var supply = await solace.totalSupply({blockTag:blockTag})
-  var balances = await Promise.all(Object.keys(skipAddresses[chainID+""]).map(addr => solace.balanceOf(addr, {blockTag:blockTag})))
-  balances.forEach(b => { supply = supply.sub(b) });
-  return supply
+  var solace = new multicall.Contract(SOLACE_ADDRESS, ERC20ABI)
+  var err;
+  for(var i = 0; i < 5; ++i) {
+    try {
+      var requests = []
+      requests.push(solace.totalSupply())
+      var skipAddresses = Object.keys(skipAddresses[chainID+""])
+      skipAddresses.forEach(addr => requests.push(solace.balanceOf(addr)));
+      var results = await mcProvider.all(requests)
+      var supply = results[0]
+      for(var i = 1; i < results.length; ++i) {
+        supply = supply.sub(results[i])
+      }
+      return supply
+    } catch(e) {
+      err = e
+    }
+  }
+  throw err
 }
 
 async function handle(event) {

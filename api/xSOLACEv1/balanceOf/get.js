@@ -27,8 +27,16 @@ async function getBalanceOf(account) {
     getProvider(1)
   ])
   var xsolacev1 = new ethers.Contract(XSOLACE_V1_ADDRESS, ERC20ABI, provider)
-  var bal = await xsolacev1.balanceOf(account)
-  return bal
+  var err;
+  for(var i = 0; i < 5; ++i) {
+    try {
+      var bal = await xsolacev1.balanceOf(account)
+      return bal
+    } catch(e) {
+      err = e
+    }
+  }
+  throw err
 }
 
 async function handle(event) {
