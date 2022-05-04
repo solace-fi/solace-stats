@@ -65,7 +65,7 @@ async function createHistory() {
     policies = res.policies
     if(history.length > 0) {
       latestBlock = history[history.length-1]
-      startBlock = Math.max(res.latestSearchedBlock||0, (latestBlock.blockNumber+1)||0)
+      startBlock = Math.max((res.latestSearchedBlock+1)||0, (latestBlock.blockNumber+1)||0)
     }
     else throw ""
   }).catch(async()=>{

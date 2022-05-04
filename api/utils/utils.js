@@ -104,10 +104,10 @@ exports.getProvider = getProvider
 
 // gets a multicall provider for a given chainID
 async function getMulticallProvider(chainID) {
-  const prov = await getProvider(chainID)
+  var chainNum = chainID - 0
+  const prov = await getProvider(chainNum)
   var mcProvider = new multicall.Provider(prov)
   await mcProvider.init()
-  var chainNum = chainID - 0
   if(chainNum == 1313161554) mcProvider._multicallAddress = "0xdc1522872E440cF9cD48E237EAFEfaa5F157Ca1d"
   if(chainNum == 1313161555) mcProvider._multicallAddress = "0x8f81207F59A4f86d68608fF90b259A0927242967"
   return mcProvider
@@ -195,3 +195,16 @@ function sortBNs(a, b) {
   return 0;
 }
 exports.sortBNs = sortBNs
+
+
+// todo: attach to array prototype
+function filterYN(f, arr) {
+  var y = []
+  var n = []
+  for(var ele of arr) {
+    if(f(ele)) y.push(ele)
+    else n.push(ele)
+  }
+  return [y, n]
+}
+exports.filterYN = filterYN

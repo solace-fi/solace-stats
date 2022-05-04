@@ -34,6 +34,7 @@ async function getXsLocksOfChain(chainID) {
   })
   return xslocks
 }
+exports.getXsLocksOfChain = getXsLocksOfChain
 
 async function getXsLocks() {
   return new Promise(async (resolve) => {

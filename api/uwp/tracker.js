@@ -14,17 +14,19 @@ async function track_uwp() {
       track_uwp_aurora(),
       track_uwp_polygon(),
     ])
-    let res = JSON.stringify({
+    let r = {
       "1":uwp_mainnet,
       "1313161554":uwp_aurora,
       "137":uwp_polygon
-    })
+    }
+    let res = JSON.stringify(r)
     await Promise.all([
       s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/uwp/all.json', Body: res, ContentType: "application/json" }),
-      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/uwp/all.json', Body: res, ContentType: "application/json" })
+      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/uwp/all.json', Body: res, ContentType: "application/json" }),
+      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/uwp/sum.json', Body: joined, ContentType: "application/json" })
     ])
     console.log('done tracking all uwp')
-    resolve(res)
+    resolve(r)
   })
 }
 exports.track_uwp = track_uwp
