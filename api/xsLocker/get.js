@@ -4,7 +4,7 @@ const BN = ethers.BigNumber
 const formatUnits = ethers.utils.formatUnits
 const multicall = require('ethers-multicall')
 
-const CHAIN_IDS = [1,1313161554,137] // mainnet, aurora, polygon
+const CHAIN_IDS = [1,1313161554,137] // ethereum, aurora, polygon
 const XSLOCKER_ADDRESS = "0x501Ace47c5b0C2099C4464f681c3fa2ECD3146C1"
 
 async function getXsLocksOfChain(chainID) {
@@ -34,6 +34,7 @@ async function getXsLocksOfChain(chainID) {
   })
   return xslocks
 }
+exports.getXsLocksOfChain = getXsLocksOfChain
 
 async function getXsLocks() {
   return new Promise(async (resolve) => {

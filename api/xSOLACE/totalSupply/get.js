@@ -1,7 +1,8 @@
-const { getProvider, s3GetObjectPromise, snsPublishError } = require("./../../utils/utils")
+const { getProvider, getMulticallProvider, s3GetObjectPromise, snsPublishError } = require("./../../utils/utils")
 const ethers = require('ethers')
 const BN = ethers.BigNumber
 const formatUnits = ethers.utils.formatUnits
+const multicall = require('ethers-multicall')
 
 // Define headers
 const headers = {
@@ -11,7 +12,7 @@ const headers = {
   "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
 }
 
-const CHAIN_IDS = [1,137,1313161554] // mainnet, polygon, aurora
+const CHAIN_IDS = [1,1313161554,137] // ethereum, aurora, polygon
 const ALL_CHAINS = ["sum","all","1","137","1313161554"]
 const XSOLACE_ADDRESS = "0x501ACe802447B1Ed4Aae36EA830BFBde19afbbF9"
 const ERC20ABI = [{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]
@@ -26,16 +27,29 @@ function verifyChainID(params) {
 }
 
 async function getTotalSupply(chainID) {
-  var [skipAddresses, provider] = await Promise.all([
+  var [skipAddresses, mcProvider] = await Promise.all([
     s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'xSOLACE/totalSupply/skip_addresses.json'}, cache=true).then(JSON.parse),
-    getProvider(chainID)
+    getMulticallProvider(chainID)
   ])
-  var xsolace = new ethers.Contract(XSOLACE_ADDRESS, ERC20ABI, provider)
-  var blockTag = await provider.getBlockNumber()
-  var supply = await xsolace.totalSupply({blockTag:blockTag})
-  var balances = await Promise.all(Object.keys(skipAddresses[chainID+""]).map(addr => xsolace.balanceOf(addr, {blockTag:blockTag})))
-  balances.forEach(b => { supply = supply.sub(b) });
-  return supply
+  var xsolace = new multicall.Contract(XSOLACE_ADDRESS, ERC20ABI)
+  var err;
+  for(var i = 0; i < 5; ++i) {
+    try {
+      var requests = []
+      requests.push(xsolace.totalSupply())
+      var skipAddresses = Object.keys(skipAddresses[chainID+""])
+      skipAddresses.forEach(addr => requests.push(xsolace.balanceOf(addr)));
+      var results = await mcProvider.all(requests)
+      var supply = results[0]
+      for(var i = 1; i < results.length; ++i) {
+        supply = supply.sub(results[i])
+      }
+      return supply
+    } catch(e) {
+      err = e
+    }
+  }
+  throw err
 }
 
 async function handle(event) {

@@ -1,4 +1,4 @@
-// tracks policies in mainnet over time
+// tracks policies in ethereum over time
 
 const { getProvider, getMulticallProvider, s3GetObjectPromise, s3PutObjectPromise, snsPublishError, withBackoffRetries, formatTimestamp, fetchBlock } = require("./../utils/utils")
 const { fetchReservesOrZero, calculateUniswapV2PriceOrZero } = require("./../utils/priceUtils")
@@ -65,7 +65,7 @@ async function createHistory() {
     policies = res.policies
     if(history.length > 0) {
       latestBlock = history[history.length-1]
-      startBlock = latestBlock.blockNumber+1
+      startBlock = Math.max((res.latestSearchedBlock+1)||0, (latestBlock.blockNumber+1)||0)
     }
     else throw ""
   }).catch(async()=>{
@@ -87,6 +87,7 @@ async function createHistory() {
 
   // fetch new events
   var endBlock = await provider.getBlockNumber()
+  var latestSearchedBlock = endBlock;
   var events = await Promise.all([
     fetchEvents(swc, "DepositMade", startBlock, endBlock),
     fetchEvents(swc, "WithdrawMade", startBlock, endBlock),
@@ -196,7 +197,7 @@ async function createHistory() {
     latestBlock.timestring = formatTimestamp(timestamp)
     history.push({...latestBlock})
   }
-  return {history, policies}
+  return {history, policies, latestSearchedBlock}
 }
 
 // given an array of arrays, returns all elements of all arrays in a single array

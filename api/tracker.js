@@ -6,6 +6,8 @@ const { track_markets } = require("./markets/tracker")
 const { track_community } = require("./community/tracker")
 const { track_swcv1 } = require("./swc/swcv1")
 const { track_swcv2 } = require("./swc/swcv2")
+const { trackStaking } = require("./staking/tracker")
+const { bundle } = require("./frontend/bundle")
 
 // Define headers
 const headers = {
@@ -15,13 +17,16 @@ const headers = {
 }
 
 async function track() {
-  return await Promise.all([
+  var res = await Promise.all([
     track_uwp(),
     track_markets(),
     track_community(),
     track_swcv1(),
-    track_swcv2()
+    track_swcv2(),
+    trackStaking()
   ])
+  await bundle(res)
+  return res
 }
 
 // Lambda handler

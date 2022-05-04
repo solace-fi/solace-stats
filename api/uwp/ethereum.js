@@ -1,4 +1,4 @@
-// tracks assets in mainnet uwp over time
+// tracks assets in ethereum uwp over time
 
 const { getProvider, s3GetObjectPromise, s3PutObjectPromise, snsPublishError, withBackoffRetries, formatTimestamp, fetchBlock } = require("./../utils/utils")
 const { fetchBalances, fetchBalanceOrZero, fetchSupplyOrZero, fetchReservesOrZero, fetchUniswapV2PriceOrZero, fetchUniswapV3PriceOrZero, fetchScpPpsOrZero } = require("./../utils/priceUtils")
@@ -53,13 +53,13 @@ async function createCSV() {
   var endBlock = await provider.getBlockNumber()
   var blockStep = 1000
   // checkpoint
-  await s3GetObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/uwp/mainnet.csv'}).then(res => {
+  await s3GetObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/uwp/ethereum.csv'}).then(res => {
     csv = res
     var rows = csv.split('\n')
     var lastBlock = rows[rows.length-2].split(',')[0]-0
     startBlock = lastBlock + blockStep
   }).catch(()=>{})
-  console.log(`querying block range (${startBlock}, ${endBlock}, ${blockStep}) (${(endBlock-startBlock)/blockStep})`)
+  console.log(`uwp ethereum: querying block range (${startBlock}, ${endBlock}, ${blockStep}) (${(endBlock-startBlock)/blockStep})`)
   // fetch info for a given block
   function createRowPromise(blockTag) {
     return new Promise(async (resolve,reject) => {
@@ -106,17 +106,17 @@ async function prefetch() {
   initialized = true
 }
 
-async function track_uwp_mainnet() {
+async function track_uwp_ethereum() {
   return new Promise(async (resolve) => {
-    console.log('start tracking uwp mainnet')
+    console.log('start tracking uwp ethereum')
     await prefetch()
     var csv = await createCSV()
     await Promise.all([
-      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/uwp/mainnet.csv', Body: csv, ContentType: "text/csv" }),
-      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/uwp/mainnet.csv', Body: csv, ContentType: "text/csv" })
+      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/uwp/ethereum.csv', Body: csv, ContentType: "text/csv" }),
+      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/uwp/ethereum.csv', Body: csv, ContentType: "text/csv" })
     ])
-    console.log('done tracking uwp mainnet')
+    console.log('done tracking uwp ethereum')
     resolve(csv)
   })
 }
-exports.track_uwp_mainnet = track_uwp_mainnet
+exports.track_uwp_ethereum = track_uwp_ethereum
