@@ -160,7 +160,7 @@ async def get_soteria_tvl(chain, addresses):
         print("\n################# Soteria TVL Calculation #################")
         tvl_usd = 0
         tvl_eth = 0
-        # mainnet and polygon tvl calculation via zapper api
+        # ethereum and polygon tvl calculation via zapper api
         # TODO: need to implement for aurora
         for v in addresses:
             if chain == "aurora":
@@ -183,7 +183,7 @@ async def get_uwp_tvl(chain, addresses):
         print("\n################# Underwriting Pool TVL Calculation #################")
         tvl_usd = 0
         tvl_eth = 0
-        # mainnet and polygon tvl calculation via zapper api
+        # ethereum and polygon tvl calculation via zapper api
         # TODO: need to implement for aurora
         for v in addresses:
             if chain == "aurora":

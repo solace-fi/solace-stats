@@ -2,20 +2,20 @@
 
 const { getProvider, s3GetObjectPromise, s3PutObjectPromise, snsPublishError, withBackoffRetries, formatTimestamp, fetchBlock } = require("./../utils/utils")
 
-const { track_markets_mainnet } = require("./mainnet")
+const { track_markets_ethereum } = require("./ethereum")
 const { track_markets_aurora } = require("./aurora")
 const { track_markets_polygon } = require("./polygon")
 
 async function track_markets() {
   return new Promise(async (resolve) => {
     console.log('start tracking all markets')
-    let [markets_mainnet, markets_aurora, markets_polygon] = await Promise.all([
-      track_markets_mainnet(),
+    let [markets_ethereum, markets_aurora, markets_polygon] = await Promise.all([
+      track_markets_ethereum(),
       track_markets_aurora(),
       track_markets_polygon(),
     ])
     let res = JSON.stringify({
-      "1":markets_mainnet,
+      "1":markets_ethereum,
       "1313161554":markets_aurora,
       "137":markets_polygon
     })

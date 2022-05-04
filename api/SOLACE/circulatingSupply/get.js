@@ -12,7 +12,7 @@ const headers = {
   "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT,DELETE"
 }
 
-const CHAIN_IDS = [1,137,1313161554] // mainnet, polygon, aurora
+const CHAIN_IDS = [1,1313161554,137] // ethereum, aurora, polygon
 const ALL_CHAINS = ["sum","all","1","137","1313161554"]
 const SOLACE_ADDRESS = "0x501acE9c35E60f03A2af4d484f49F9B1EFde9f40"
 const ERC20ABI = [{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]

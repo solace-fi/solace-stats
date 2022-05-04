@@ -68,7 +68,7 @@ async function createCSV() {
     var lastBlock = rows[rows.length-2].split(',')[0]-0
     startBlock = lastBlock + blockStep
   }).catch(()=>{})
-  console.log(`querying block range (${startBlock}, ${endBlock}, ${blockStep}) (${(endBlock-startBlock)/blockStep})`)
+  console.log(`uwp polygon: querying block range (${startBlock}, ${endBlock}, ${blockStep}) (${(endBlock-startBlock)/blockStep})`)
   // fetch info for a given block
   function createRowPromise(blockTag) {
     return new Promise(async (resolve,reject) => {

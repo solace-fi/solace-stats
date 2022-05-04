@@ -1,4 +1,4 @@
-// tracks markets in mainnet over time
+// tracks markets in ethereum over time
 
 const { getProvider, s3GetObjectPromise, s3PutObjectPromise, snsPublishError, withBackoffRetries, formatTimestamp, fetchBlock } = require("./../utils/utils")
 const { fetchReservesOrZero, calculateUniswapV2PriceOrZero } = require("./../utils/priceUtils")
@@ -19,13 +19,13 @@ async function createCSV() {
   var endBlock = await provider.getBlockNumber()
   var blockStep = 1000
   // checkpoint
-  await s3GetObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/markets/mainnet.csv'}).then(res => {
+  await s3GetObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/markets/ethereum.csv'}).then(res => {
     csv = res
     var rows = csv.split('\n')
     var lastBlock = rows[rows.length-2].split(',')[0]-0
     startBlock = lastBlock + blockStep
   }).catch(()=>{})
-  console.log(`querying block range (${startBlock}, ${endBlock}, ${blockStep}) (${(endBlock-startBlock)/blockStep})`)
+  console.log(`markets ethereum: querying block range (${startBlock}, ${endBlock}, ${blockStep}) (${(endBlock-startBlock)/blockStep})`)
   // fetch info for a given block
   function createRowPromise(blockTag) {
     return new Promise(async (resolve,reject) => {
@@ -63,17 +63,17 @@ async function prefetch() {
   initialized = true
 }
 
-async function track_markets_mainnet() {
+async function track_markets_ethereum() {
   return new Promise(async (resolve) => {
-    console.log('start tracking markets mainnet')
+    console.log('start tracking markets ethereum')
     await prefetch()
     var csv = await createCSV()
     await Promise.all([
-      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/markets/mainnet.csv', Body: csv, ContentType: "text/csv" }),
-      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/markets/mainnet.csv', Body: csv, ContentType: "text/csv" })
+      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/markets/ethereum.csv', Body: csv, ContentType: "text/csv" }),
+      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/markets/ethereum.csv', Body: csv, ContentType: "text/csv" })
     ])
-    console.log('done tracking markets mainnet')
+    console.log('done tracking markets ethereum')
     resolve(csv)
   })
 }
-exports.track_markets_mainnet = track_markets_mainnet
+exports.track_markets_ethereum = track_markets_ethereum
