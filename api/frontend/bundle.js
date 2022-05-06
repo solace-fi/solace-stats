@@ -11,7 +11,10 @@ async function bundle(records) {
   res.globalStakedSolace = staking.global.solaceStaked
   res.averageStakingAPR = staking.global.apr
   res.uwp = sumUWPs(uwp)
-  res.coverLimit = sumCoverLimits(swcv1, swcv2)
+  var [coverLimit, activePolicies, totalPolicies] = aggregatePolicies(swcv1, swcv2)
+  res.coverLimit = coverLimit
+  res.activePolicies = activePolicies
+  res.totalPolicies = totalPolicies
   var r = JSON.stringify(res)
   await s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/frontend-stats.json', Body: r, ContentType: "application/json" })
   return res
@@ -65,12 +68,19 @@ function sumUWPs(uwps) {
   return s
 }
 
-function sumCoverLimits(swcv1, swcv2) {
-  var s = BN.from(0)
+function aggregatePolicies(swcv1, swcv2) {
+  var cl = BN.from(0)
+  var ap = 0
+  var tp = 0
   for(var swc of [swcv1, swcv2]) {
     var history = swc.history
     var latest = history[history.length-1]
-    s = s.add(latest.coverLimit)
+    cl = cl.add(latest.coverLimit)
+    tp += swc.policies.length
+    for(var policy of swc.policies) {
+      if(BN.from(policy.coverLimit).gt("0")) ap++
+    }
   }
-  return parseFloat(formatUnits(s))
+  cl = parseFloat(formatUnits(cl))
+  return [cl, ap, tp]
 }

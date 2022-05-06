@@ -76,7 +76,12 @@ exports.snsPublishMessage = snsPublishMessage
 // formats an error message then publishes it to SNS
 // returns a promise representing the request
 async function snsPublishError(event, err) {
-  var msg = `The following error occurred in the solace-stats api\n${event["headers"]["X-Forwarded-Proto"]}://${event["headers"]["Host"]}${event["path"]} params=${JSON.stringify(event["queryStringParameters"])} :\n${err.stack || err.toString()}`
+  var eventString = " <unknown>"
+  try {
+    eventString = `\n${event["headers"]["X-Forwarded-Proto"]}://${event["headers"]["Host"]}${event["path"]} params=${JSON.stringify(event["queryStringParameters"])}`
+  } catch(e) {}
+  var errMsg = err.stack || err.toString()
+  var msg = `The following error occurred in the solace-stats api${eventString} :\n${errMsg}`
   return snsPublishMessage(msg)
 }
 exports.snsPublishError = snsPublishError
