@@ -14,14 +14,15 @@ async function track_markets() {
       track_markets_aurora(),
       track_markets_polygon(),
     ])
-    let res = JSON.stringify({
+    let res = {
       "1":markets_ethereum,
       "1313161554":markets_aurora,
       "137":markets_polygon
-    })
+    }
+    let r = JSON.stringify(res)
     await Promise.all([
-      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/markets/all.json', Body: res, ContentType: "application/json" }),
-      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/markets/all.json', Body: res, ContentType: "application/json" })
+      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/markets/all.json', Body: r, ContentType: "application/json" }),
+      s3PutObjectPromise({ Bucket: 'stats-cache.solace.fi', Key: 'markets/all.json', Body: r, ContentType: "application/json" })
     ])
     console.log('done tracking all markets')
     resolve(res)

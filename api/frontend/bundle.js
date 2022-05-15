@@ -5,8 +5,9 @@ const ethers = require('ethers')
 const BN = ethers.BigNumber
 const formatUnits = ethers.utils.formatUnits
 
-async function bundle(records) {
-  var [uwp, markets, community, swcv1, swcv2, staking] = records
+async function frontend_bundle(records) {
+  var [uwp, markets, community, staking, xslocker, swc, positions, series] = records
+  var {swcv1, swcv2} = swc
   var res = {}
   res.globalStakedSolace = staking.global.solaceStaked
   res.averageStakingAPR = staking.global.apr
@@ -16,10 +17,10 @@ async function bundle(records) {
   res.activePolicies = activePolicies
   res.totalPolicies = totalPolicies
   var r = JSON.stringify(res)
-  await s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/frontend-stats.json', Body: r, ContentType: "application/json" })
+  await s3PutObjectPromise({ Bucket: 'stats-cache.solace.fi', Key: 'frontend-stats.json', Body: r, ContentType: "application/json" })
   return res
 }
-exports.bundle = bundle
+exports.frontend_bundle = frontend_bundle
 
 function sumUWPs(uwps) {
   var s = 0

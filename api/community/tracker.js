@@ -56,10 +56,10 @@ async function track_community() {
       Twitter: twitterFollowers,
       Discord: discordFollowers
     })
-    history = JSON.stringify(history)
+    let h = JSON.stringify(history)
     await Promise.all([
-      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/community/followers.json', Body: history, ContentType: "application/json" }),
-      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/community/followers.json', Body: history, ContentType: "application/json" })
+      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/community/followers.json', Body: h, ContentType: "application/json" }),
+      s3PutObjectPromise({ Bucket: 'stats-cache.solace.fi', Key: 'community/followers.json', Body: h, ContentType: "application/json" })
     ])
     console.log('done tracking community')
     resolve(history)

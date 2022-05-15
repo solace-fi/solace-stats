@@ -232,7 +232,7 @@ async function track_swcv1() {
     var res = JSON.stringify(swcv1)
     await Promise.all([
       s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/swc/swcv1.json', Body: res, ContentType: "application/json" }),
-      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/swc/swcv1.json', Body: res, ContentType: "application/json" })
+      s3PutObjectPromise({ Bucket: 'stats-cache.solace.fi', Key: 'swc/swcv1.json', Body: res, ContentType: "application/json" })
     ])
     console.log('done tracking swc v1')
     resolve(swcv1)

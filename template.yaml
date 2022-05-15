@@ -401,3 +401,100 @@ Resources:
               - "*"
             AllowedHeaders:
               - "*"
+  # begin stats-cache.solace.fi bucket and distribution
+  StatsCacheWebsiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: stats-cache.solace.fi
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+            AllowedOrigins:
+              - '*'
+      WebsiteConfiguration:
+        IndexDocument: index.html
+      Tags:
+        - Key: Project
+          Value: client
+  StatsCacheWebsiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref StatsCacheWebsiteBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Action:
+            - "s3:GetObject"
+          Effect: "Allow"
+          Resource: arn:aws:s3:::stats-cache.solace.fi/*
+          Principal:
+            AWS: !Join ["", ["arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ", "EPMQ7FUHPT5YX"] ]
+  StatsCacheWebsiteDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Origins:
+          - Id: StatsCacheWebsiteBucket
+            DomainName: stats-cache.solace.fi.s3.amazonaws.com
+            S3OriginConfig:
+              OriginAccessIdentity: !Join ["", ["origin-access-identity/cloudfront/", "EPMQ7FUHPT5YX"] ]
+        Enabled: 'true'
+        DefaultRootObject: index.html
+        Aliases:
+          - stats-cache.solace.fi
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          Compress: true
+          ViewerProtocolPolicy: redirect-to-https
+          TargetOriginId: StatsCacheWebsiteBucket
+          ForwardedValues:
+            QueryString: false
+          CachePolicyId: "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
+        PriceClass: PriceClass_100
+        ViewerCertificate:
+          AcmCertificateArn: arn:aws:acm:us-east-1:151427405638:certificate/54ea004e-a3bf-4f9e-a027-d9f4f0dc2d34
+          MinimumProtocolVersion: TLSv1.2_2018
+          SslSupportMethod: sni-only
+        HttpVersion: http2
+        IPV6Enabled: true
+      Tags:
+        - Key: Project
+          Value: client
+    DependsOn: StatsCacheWebsiteBucketPolicy
+  StatsCacheDnsZoneIPv4:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      AliasTarget:
+        DNSName: !GetAtt StatsCacheWebsiteDistribution.DomainName
+        EvaluateTargetHealth: false
+        HostedZoneId: Z2FDTNDATAQYW2
+      HostedZoneName: solace.fi.
+      Name: stats-cache.solace.fi
+      Type: A
+    DependsOn: StatsCacheWebsiteDistribution
+  StatsCacheDnsZoneIPv6:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      AliasTarget:
+        DNSName: !GetAtt StatsCacheWebsiteDistribution.DomainName
+        EvaluateTargetHealth: false
+        HostedZoneId: Z2FDTNDATAQYW2
+      HostedZoneName: solace.fi.
+      Name: stats-cache.solace.fi
+      Type: AAAA
+    DependsOn: StatsCacheWebsiteDistribution
+  # end stats-cache.solace.fi bucket and distribution

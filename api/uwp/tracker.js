@@ -22,7 +22,7 @@ async function track_uwp() {
     let res = JSON.stringify(r)
     await Promise.all([
       s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/uwp/all.json', Body: res, ContentType: "application/json" }),
-      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/uwp/all.json', Body: res, ContentType: "application/json" })
+      s3PutObjectPromise({ Bucket: 'stats-cache.solace.fi', Key: 'uwp/all.json', Body: res, ContentType: "application/json" })
     ])
     console.log('done tracking all uwp')
     resolve(r)

@@ -118,7 +118,7 @@ async function track_uwp_aurora() {
     var csv = await createCSV()
     await Promise.all([
       s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/uwp/aurora.csv', Body: csv, ContentType: "text/csv" }),
-      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/uwp/aurora.csv', Body: csv, ContentType: "text/csv" })
+      s3PutObjectPromise({ Bucket: 'stats-cache.solace.fi', Key: 'uwp/aurora.csv', Body: csv, ContentType: "text/csv" })
     ])
     console.log('done tracking uwp aurora')
     resolve(csv)

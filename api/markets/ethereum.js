@@ -70,7 +70,7 @@ async function track_markets_ethereum() {
     var csv = await createCSV()
     await Promise.all([
       s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/markets/ethereum.csv', Body: csv, ContentType: "text/csv" }),
-      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/markets/ethereum.csv', Body: csv, ContentType: "text/csv" })
+      s3PutObjectPromise({ Bucket: 'stats-cache.solace.fi', Key: 'markets/ethereum.csv', Body: csv, ContentType: "text/csv" })
     ])
     console.log('done tracking markets ethereum')
     resolve(csv)

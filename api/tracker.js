@@ -1,13 +1,14 @@
 // tracks stats over time
 
-const { snsPublishError } = require("./utils/utils")
+const { snsPublishError, s3GetObjectPromise } = require("./utils/utils")
 const { track_uwp } = require("./uwp/tracker")
 const { track_markets } = require("./markets/tracker")
 const { track_community } = require("./community/tracker")
-const { track_swcv1 } = require("./swc/swcv1")
-const { track_swcv2 } = require("./swc/swcv2")
 const { trackStaking } = require("./staking/tracker")
-const { bundle } = require("./frontend/bundle")
+const { getXsLocks } = require("./xsLocker/get")
+const { track_policies } = require("./swc/tracker")
+const { frontend_bundle } = require("./frontend/bundle")
+const { analytics_bundle } = require("./analytics/bundle")
 
 // Define headers
 const headers = {
@@ -21,11 +22,16 @@ async function track() {
     track_uwp(),
     track_markets(),
     track_community(),
-    track_swcv1(),
-    track_swcv2(),
-    trackStaking()
+    trackStaking(),
+    getXsLocks(),
+    track_policies(),
+    s3GetObjectPromise({Bucket:'risk-data.solace.fi.data', Key:'positions-cache.json'}).then(JSON.parse),
+    s3GetObjectPromise({Bucket:'risk-data.solace.fi.data', Key:'current-rate-data/series.json'}).then(JSON.parse),
   ])
-  await bundle(res)
+  await Promise.all([
+    frontend_bundle(res),
+    analytics_bundle(res),
+  ])
   return res
 }
 
