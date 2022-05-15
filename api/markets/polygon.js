@@ -81,7 +81,7 @@ async function track_markets_polygon() {
     var csv = await createCSV()
     await Promise.all([
       s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/markets/polygon.csv', Body: csv, ContentType: "text/csv" }),
-      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/markets/polygon.csv', Body: csv, ContentType: "text/csv" })
+      s3PutObjectPromise({ Bucket: 'stats-cache.solace.fi', Key: 'markets/polygon.csv', Body: csv, ContentType: "text/csv" })
     ])
     console.log('done tracking markets polygon')
     resolve(csv)

@@ -123,7 +123,7 @@ async function track_uwp_polygon() {
     var csv = await createCSV()
     await Promise.all([
       s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/uwp/polygon.csv', Body: csv, ContentType: "text/csv" }),
-      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/uwp/polygon.csv', Body: csv, ContentType: "text/csv" })
+      s3PutObjectPromise({ Bucket: 'stats-cache.solace.fi', Key: 'uwp/polygon.csv', Body: csv, ContentType: "text/csv" })
     ])
     console.log('done tracking uwp polygon')
     resolve(csv)

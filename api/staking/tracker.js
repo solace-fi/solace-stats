@@ -102,7 +102,7 @@ async function trackStaking() {
     var staking = await handler()
     var res = JSON.stringify(staking)
     await Promise.all([
-      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'public/staking.json', Body: res, ContentType: "application/json" })
+      s3PutObjectPromise({ Bucket: 'stats-cache.solace.fi', Key: 'staking.json', Body: res, ContentType: "application/json" })
     ])
     console.log('done tracking staking')
     resolve(staking)
