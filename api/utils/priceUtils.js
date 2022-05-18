@@ -5,6 +5,8 @@ const formatUnits = ethers.utils.formatUnits
 const { withBackoffRetries } = require("./utils")
 
 const ETH_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+const ONE_ETHER = BN.from("1000000000000000000")
+const x192 = BN.from("0x01000000000000000000000000000000000000000000000000")
 
 // returns the balance of a holder for a list of tokens
 // result is an array
@@ -25,6 +27,36 @@ async function fetchBalances(tokenList, holder, blockTag) {
   return Promise.all(promises)
 }
 exports.fetchBalances = fetchBalances
+
+// returns the balance of a holder for a list of ctokens
+// result is an array
+// each element will be an object eg [ {ctokenBalance: "1.2", utokenBalance: "2.5", exchangeRate: "2."}]
+async function fetchCTokenBalances(ctokenList, holder, blockTag) {
+  function createBalancePromise(i) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        var [cbal, rate] = await Promise.all([
+          withBackoffRetries(() => ctokenList[i].contract.balanceOf(holder, {blockTag:blockTag})),
+          withBackoffRetries(() => ctokenList[i].contract.callStatic.exchangeRateCurrent({blockTag:blockTag}))
+        ])
+        // TODO: check math. works for cAURORA
+        var ubal = cbal.mul(rate).div(ONE_ETHER)
+        var ctokenBalance = formatUnits(cbal, ctokenList[i].cdecimals)
+        var utokenBalance = formatUnits(ubal, ctokenList[i].udecimals)
+        var exchangeRate = formatUnits(rate, 28)
+        resolve({ctokenBalance, utokenBalance, exchangeRate})
+      } catch(e) {
+        resolve({ctokenBalance:"0.0", utokenBalance:"0.0", exchangeRate:"0.0"})
+      }
+    })
+  }
+  var promises = []
+  for(var i = 0; i < ctokenList.length; ++i) {
+    promises.push(createBalancePromise(i))
+  }
+  return Promise.all(promises)
+}
+exports.fetchCTokenBalances = fetchCTokenBalances
 
 // fetch the total supply of a token
 // if the token does not exist returns 0
@@ -84,9 +116,6 @@ function calculateUniswapV2PriceOrZero(reserve0, reserve1, oneZero, decimals0, d
   }
 }
 exports.calculateUniswapV2PriceOrZero = calculateUniswapV2PriceOrZero
-
-const ONE_ETHER = BN.from("1000000000000000000")
-const x192 = BN.from("0x01000000000000000000000000000000000000000000000000")
 
 // fetch the price of a token in a uniswap v3 pool
 async function fetchUniswapV3PriceOrZero(pool, oneZero, decimals0, decimals1, blockTag) {
