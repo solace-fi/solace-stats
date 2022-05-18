@@ -1,7 +1,7 @@
 // tracks assets in aurora uwp over time
 
 const { getProvider, s3GetObjectPromise, s3PutObjectPromise, snsPublishError, withBackoffRetries, formatTimestamp, fetchBlock } = require("./../utils/utils")
-const { fetchBalances, fetchBalanceOrZero, fetchSupplyOrZero, fetchReservesOrZero, fetchUniswapV2PriceOrZero, fetchUniswapV3PriceOrZero } = require("./../utils/priceUtils")
+const { fetchBalances, fetchBalanceOrZero, fetchSupplyOrZero, fetchReservesOrZero, fetchUniswapV2PriceOrZero, fetchUniswapV3PriceOrZero, fetchCTokenBalances } = require("./../utils/priceUtils")
 const ethers = require('ethers')
 const BN = ethers.BigNumber
 const formatUnits = ethers.utils.formatUnits
@@ -20,6 +20,9 @@ var tokenList = [
   {address: "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79", symbol: "AURORA", decimals: 18},
   {address: "0xdDAdf88b007B95fEb42DDbd110034C9a8e9746F2", symbol: "TLP", decimals: 18},
   {address: "0x501acE9c35E60f03A2af4d484f49F9B1EFde9f40", symbol: "SOLACE", decimals: 18}
+]
+var ctokenList = [
+  {address: "0x94FA9979751a74e6b133Eb95Aeca8565c0809BaB", symbol: "cAURORA", cdecimals: 8, udecimals: 18}
 ]
 var initialized = false
 var provider
@@ -69,11 +72,13 @@ async function createCSV() {
   function createRowPromise(blockTag) {
     return new Promise(async (resolve,reject) => {
       console.log(`queued ${blockTag}`)
-      var [block, balances, prices] = await Promise.all([
+      var [block, balances, prices, ctokenBalances] = await Promise.all([
         fetchBlock(provider, blockTag),
         fetchBalances(tokenList, UWP_ADDRESS, blockTag),
-        fetchPrices(blockTag)
+        fetchPrices(blockTag),
+        fetchCTokenBalances(ctokenList, UWP_ADDRESS, blockTag),
       ])
+      balances[8] = parseFloat(balances[8]) + parseFloat(ctokenBalances[0].utokenBalance)
       var row = `${blockTag},${block.timestamp},${formatTimestamp(block.timestamp)},${balances.join(',')},${prices.join(',')}\n`
       console.log(`finished ${blockTag}\n${row}`)
       resolve(row)
@@ -92,14 +97,18 @@ async function createCSV() {
 async function prefetch() {
   if(initialized) return
 
-  [provider, erc20Abi, uniV2PairAbi] = await Promise.all([
+  [provider, erc20Abi, uniV2PairAbi, ctokenAbi] = await Promise.all([
     getProvider(1313161554),
     s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'abi/other/ERC20.json'}, cache=true),
     s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'abi/other/UniswapV2Pair.json'}, cache=true),
+    s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'abi/other/CToken.json'}, cache=true),
   ])
   for(var i = 0; i < tokenList.length; ++i) {
     tokenList[i].contract = new ethers.Contract(tokenList[i].address, erc20Abi, provider)
     tokenDict[tokenList[i].symbol] = tokenList[i]
+  }
+  for(var i = 0; i < ctokenList.length; ++i) {
+    ctokenList[i].contract = new ethers.Contract(ctokenList[i].address, ctokenAbi, provider)
   }
   pools = {
     "USDC-WNEAR": new ethers.Contract("0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0", uniV2PairAbi, provider), // trisolaris usdc-wnear
