@@ -11,6 +11,8 @@ const ethers = require('ethers')
 const BN = ethers.BigNumber
 const multicall = require('ethers-multicall')
 
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
+
 var s3_cache = {}
 
 // retrieves an object from S3 with optional caching
@@ -214,3 +216,76 @@ function filterYN(f, arr) {
   return [y, n]
 }
 exports.filterYN = filterYN
+
+// returns true if code is deployed at the given address and block
+// returns false if the address is invalid or no code was deployed yet
+async function isDeployed(provider, address, blockTag="latest") {
+  try {
+    // safety checks
+    if(address === undefined || address === null) return false;
+    if(address.length !== 42) return false;
+    if(address == ZERO_ADDRESS) return false;
+    if((await provider.getCode(address, blockTag)).length <= 2) return false;
+    return true;
+  } catch (e) {
+    if(e.toString().includes('account aurora does not exist while viewing')) return false; // handle aurora idiosyncracies
+    else throw e;
+  }
+}
+exports.isDeployed = isDeployed
+
+// use a binary search to determine the block in which a contract was deployed to the given address.
+// returns -1 if the contract has not been deployed yet
+async function findDeployBlock(provider, address) {
+  let L = 0;
+  let R = await provider.getBlockNumber();
+  if(!(await isDeployed(provider, address, R))) return -1;
+  while(L < R-1) {
+    let M = Math.floor((L+R)/2);
+    if(await isDeployed(provider, address, M)) R = M;
+    else L = M;
+  }
+  let b1 = await isDeployed(provider, address, R-1);
+  let b2 = await isDeployed(provider, address, R);
+  if(b1 || !b2) throw 'Error in findDeployBlock(): did not converge properly';
+  return R;
+}
+exports.findDeployBlock = findDeployBlock
+
+// fetch events that occurred in a contract with the given event name between startBlock and endBlock
+async function fetchEvents(contract, eventName, startBlock, endBlock) {
+  return new Promise(async (resolve,reject) => {
+    if(endBlock == 'latest') endBlock = await provider.getBlockNumber()
+    try {
+      var events = await contract.queryFilter(eventName, startBlock, endBlock)
+      resolve(events)
+      return
+    } catch(e) {
+      var s = e.toString();
+      if(!s.includes("10K") && !s.includes("timeout")) {
+        reject(e)
+        return
+      }
+      // log response size exceeded or query too large. recurse down
+      var midBlock = Math.floor((startBlock+endBlock)/2)
+      var [left, right] = await Promise.all([
+        fetchEvents(contract, eventName, startBlock, midBlock),
+        fetchEvents(contract, eventName, midBlock+1, endBlock),
+      ])
+      var res = left.concat(right)
+      resolve(res)
+    }
+  })
+}
+exports.fetchEvents = fetchEvents
+
+// formats a BigNumber into a string representation of a float
+// like ethers.utils.formatUnits() except keeps trailing zeros
+function formatUnitsFull(amount, decimals=18) {
+  var s = amount.toString()
+  while(s.length <= decimals) s = `0${s}`
+  var i = s.length - decimals
+  var s2 = `${s.substring(0,i)}.${s.substring(i,s.length)}`
+  return s2
+}
+exports.formatUnitsFull = formatUnitsFull
