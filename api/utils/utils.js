@@ -115,6 +115,7 @@ async function getMulticallProvider(chainID) {
   await mcProvider.init()
   if(chainNum == 1313161554) mcProvider._multicallAddress = "0xdc1522872E440cF9cD48E237EAFEfaa5F157Ca1d"
   if(chainNum == 1313161555) mcProvider._multicallAddress = "0x8f81207F59A4f86d68608fF90b259A0927242967"
+  if(chainNum == 4002)       mcProvider._multicallAddress = "0x8f81207F59A4f86d68608fF90b259A0927242967"
   return mcProvider
 }
 exports.getMulticallProvider = getMulticallProvider

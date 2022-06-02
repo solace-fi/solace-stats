@@ -7,15 +7,20 @@ DATA = {
         "xslocker": ["0x501Ace47c5b0C2099C4464f681c3fa2ECD3146C1"],
         "soteria": ["0x501ACEbe29eabc346779BcB5Fd62Eaf6Bfb5320E"]
     },
+    "aurora": {
+        "uwp": ["0x4A6B0f90597e7429Ce8400fC0E2745Add343df78"],
+        "xslocker": ["0x501Ace47c5b0C2099C4464f681c3fa2ECD3146C1"],
+        "soteria": []
+    },
     "polygon": {
         "uwp": ["0xd1108a800363c262774b990e9df75a4287d5c075"],
         "xslocker": ["0x501Ace47c5b0C2099C4464f681c3fa2ECD3146C1"],
         "soteria": ["0x501AcEC83d440c00644cA5C48d059e1840852a64"]
     },
-    "aurora": {
-        "uwp": ["0x4A6B0f90597e7429Ce8400fC0E2745Add343df78"],
+    "fantom": {
+        "uwp": ["0x2971f45c0952437934B3F055C401241e5C339F93"],
         "xslocker": ["0x501Ace47c5b0C2099C4464f681c3fa2ECD3146C1"],
-        "soteria": []
+        "soteria": ["0x501AcEC83d440c00644cA5C48d059e1840852a64"]
     }
 }
 
@@ -143,10 +148,13 @@ def get_solace_balance(network, address):
         balance = solace.functions.balanceOf(address).call()
         balance_normalized = balance / ONE_ETHER
         return {"tvl_usd": balance_normalized * SOLACE_PRICE, "tvl_eth": (balance_normalized * SOLACE_PRICE) / ETH_PRICE}
+    elif network == "aurora":
+        # TODO: implement
+        return {"tvl_usd": 0, "tvl_eth": 0}
     elif network == "polygon":
         # TODO: implemement
         return {"tvl_usd": 0, "tvl_eth": 0}
-    elif network == "aurora":
+    elif network == "fantom":
         # TODO: implement
         return {"tvl_usd": 0, "tvl_eth": 0}
     else:
@@ -171,7 +179,7 @@ async def get_soteria_tvl(chain, addresses):
             tvl_usd += result["tvl_usd"]
             tvl_eth += result["tvl_eth"]
             print(f"{chain}({v}): usd: {result['tvl_usd']} eth: {result['tvl_eth']}")
-        return {"tvl_usd": tvl_usd, "tvl_eth": tvl_eth}  
+        return {"tvl_usd": tvl_usd, "tvl_eth": tvl_eth}
     except Exception as e:
         raise Exception(f"Error occurred while getting tvl values for Soteria. Error: {e}")
 
@@ -184,9 +192,9 @@ async def get_uwp_tvl(chain, addresses):
         tvl_usd = 0
         tvl_eth = 0
         # ethereum and polygon tvl calculation via zapper api
-        # TODO: need to implement for aurora
+        # TODO: need to implement for aurora and fantom
         for v in addresses:
-            if chain == "aurora":
+            if chain == "aurora" or chain == "fantom":
                 continue
 
             print(f"\nCalculating tvl for underwriting pool address {v} in {chain} started")
@@ -201,7 +209,7 @@ async def get_uwp_tvl(chain, addresses):
                 tvl_eth += solace_result["tvl_eth"]
             print(f"{chain}({v}): usd: {result['tvl_usd'] + solace_result['tvl_usd']} eth: {result['tvl_eth'] + solace_result['tvl_eth']}")
 
-        return {"tvl_usd": tvl_usd, "tvl_eth": tvl_eth}  
+        return {"tvl_usd": tvl_usd, "tvl_eth": tvl_eth}
     except Exception as e:
         raise Exception(f"Error occurred while getting tvl values for underwriting pool. Error: {e}")
 
@@ -221,7 +229,7 @@ async def get_stacked_tvl(chain, addresses):
             print(f"{chain}({v}): usd: {result['tvl_usd']} eth: {result['tvl_eth']}")
             tvl_usd += result["tvl_usd"]
             tvl_eth += result["tvl_eth"]
-        return {"tvl_usd": tvl_usd, "tvl_eth": tvl_eth}  
+        return {"tvl_usd": tvl_usd, "tvl_eth": tvl_eth}
     except Exception as e:
         raise Exception(f"Error occurred while getting tvl values for staked solace. Error: {e}")
 

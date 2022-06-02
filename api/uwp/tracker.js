@@ -5,19 +5,22 @@ const { getProvider, s3GetObjectPromise, s3PutObjectPromise, snsPublishError, wi
 const { track_uwp_ethereum } = require("./ethereum")
 const { track_uwp_aurora } = require("./aurora")
 const { track_uwp_polygon } = require("./polygon")
+const { track_uwp_fantom } = require("./fantom")
 
 async function track_uwp() {
   return new Promise(async (resolve) => {
     console.log('start tracking all uwp')
-    let [uwp_ethereum, uwp_aurora, uwp_polygon] = await Promise.all([
+    let [uwp_ethereum, uwp_aurora, uwp_polygon, uwp_fantom] = await Promise.all([
       track_uwp_ethereum(),
       track_uwp_aurora(),
       track_uwp_polygon(),
+      track_uwp_fantom(),
     ])
     let r = {
       "1":uwp_ethereum,
       "1313161554":uwp_aurora,
-      "137":uwp_polygon
+      "137":uwp_polygon,
+      "250":uwp_fantom,
     }
     let res = JSON.stringify(r)
     await Promise.all([

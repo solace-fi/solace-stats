@@ -58,7 +58,7 @@ async function createHistory() {
   var startBlock = SWC_DEPLOY_BLOCK
   var latestBlock
   // checkpoint
-  await s3GetObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/swc/swcv2.json'}).then(res => {
+  await s3GetObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/swc/polygon_v2.json'}).then(res => {
     console.log('using checkpoint')
     res = JSON.parse(res)
     history = res.history
@@ -226,21 +226,21 @@ async function prefetch() {
   initialized = true
 }
 
-async function track_swcv2() {
+async function track_polygon_v2() {
   return new Promise(async (resolve) => {
-    console.log('start tracking swc v2')
+    console.log('start tracking swc polygon v2')
     await prefetch()
-    var swcv2 = await createHistory()
-    var res = JSON.stringify(swcv2)
+    var polygon_v2 = await createHistory()
+    var res = JSON.stringify(polygon_v2)
     await Promise.all([
-      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/swc/swcv2.json', Body: res, ContentType: "application/json" }),
-      s3PutObjectPromise({ Bucket: 'stats-cache.solace.fi', Key: 'swc/swcv2.json', Body: res, ContentType: "application/json" })
+      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/swc/polygon_v2.json', Body: res, ContentType: "application/json" }),
+      s3PutObjectPromise({ Bucket: 'stats-cache.solace.fi', Key: 'swc/polygon_v2.json', Body: res, ContentType: "application/json" })
     ])
-    console.log('done tracking swc v2')
-    resolve(swcv2)
+    console.log('done tracking swc polygon v2')
+    resolve(polygon_v2)
   })
 }
-exports.track_swcv2 = track_swcv2
+exports.track_polygon_v2 = track_polygon_v2
 
 //var res
-//track_swcv2().then(r=>{res=r;console.log(res)}).catch(console.error)
+//track_polygon_v2().then(r=>{res=r;console.log(res)}).catch(console.error)
