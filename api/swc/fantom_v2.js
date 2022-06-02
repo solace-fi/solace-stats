@@ -10,8 +10,8 @@ var initialized = false
 var provider
 var swc
 
-const SWC_ADDRESS = "0x501ACEbe29eabc346779BcB5Fd62Eaf6Bfb5320E"
-const SWC_DEPLOY_BLOCK = 14214331
+const SWC_ADDRESS = "0x501AcEC83d440c00644cA5C48d059e1840852a64"
+const SWC_DEPLOY_BLOCK = 39436142
 
 // fetch events that occurred in a contract with the given event name between startBlock and endBlock
 async function fetchEvents(contract, eventName, startBlock, endBlock) {
@@ -58,8 +58,8 @@ async function createHistory() {
   var startBlock = SWC_DEPLOY_BLOCK
   var latestBlock
   // checkpoint
-  await s3GetObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/swc/swcv1.json'}).then(res => {
-    console.log('using checkpoint')
+  await s3GetObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/swc/fantom_v2.json'}).then(res => {
+    console.log('swc fantom v2 - using checkpoint')
     res = JSON.parse(res)
     history = res.history
     policies = res.policies
@@ -69,7 +69,7 @@ async function createHistory() {
     }
     else throw ""
   }).catch(async()=>{
-    console.log('starting from scratch')
+    console.log('swc fantom v2 - starting from scratch')
     var deployBlock = await fetchBlockInfo(SWC_DEPLOY_BLOCK)
     latestBlock = {
       blockNumber: SWC_DEPLOY_BLOCK,
@@ -99,6 +99,7 @@ async function createHistory() {
     fetchEvents(swc, "ReferralRewardsEarned", startBlock, endBlock)
   ])
   events = flattenArrays(events).sort(sortEvents)
+  console.log(`found ${events.length} events. processing...`)
 
   // cache block infos
   let blockNumbers = [... new Set(events.map(event => event.blockNumber))]
@@ -142,6 +143,7 @@ async function createHistory() {
         return policy
       }
 
+      console.log(`block ${blockNumber} event ${eventName}`)
       if(eventName == "DepositMade") {
         var policy = await getPolicyByPolicyholder(event.args.policyholder)
         policy.depositsMade = BN.from(policy.depositsMade).add(event.args.amount).toString()
@@ -217,28 +219,28 @@ function sortEvents(a,b) {
 async function prefetch() {
   if(initialized) return
   [provider, swcABI] = await Promise.all([
-    getProvider(1),
-    s3GetObjectPromise({Bucket:'stats.solace.fi.data', Key:'abi/products/SolaceCoverProduct.json'}, cache=true)
+    getProvider(250),
+    s3GetObjectPromise({Bucket:'stats.solace.fi.data', Key:'abi/products/SolaceCoverProductV2.json'}, cache=true)
   ])
   swc = new ethers.Contract(SWC_ADDRESS, swcABI, provider)
   initialized = true
 }
 
-async function track_swcv1() {
+async function track_fantom_v2() {
   return new Promise(async (resolve) => {
-    console.log('start tracking swc v1')
+    console.log('start tracking swc fantom v2')
     await prefetch()
-    var swcv1 = await createHistory()
-    var res = JSON.stringify(swcv1)
+    var fantom_v2 = await createHistory()
+    var res = JSON.stringify(fantom_v2)
     await Promise.all([
-      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/swc/swcv1.json', Body: res, ContentType: "application/json" }),
-      s3PutObjectPromise({ Bucket: 'stats-cache.solace.fi', Key: 'swc/swcv1.json', Body: res, ContentType: "application/json" })
+      s3PutObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/swc/fantom_v2.json', Body: res, ContentType: "application/json" }),
+      s3PutObjectPromise({ Bucket: 'stats-cache.solace.fi', Key: 'swc/fantom_v2.json', Body: res, ContentType: "application/json" })
     ])
-    console.log('done tracking swc v1')
-    resolve(swcv1)
+    console.log('done tracking swc fantom v2')
+    resolve(fantom_v2)
   })
 }
-exports.track_swcv1 = track_swcv1
+exports.track_fantom_v2 = track_fantom_v2
 
 //var res
-//track_swcv1().then(r=>{res=r;console.log(res)}).catch(console.error)
+//track_fantom_v2().then(r=>{res=r;console.log(res)}).catch(console.error)

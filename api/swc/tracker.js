@@ -2,18 +2,20 @@
 
 const { getProvider, getMulticallProvider, s3GetObjectPromise, s3PutObjectPromise, snsPublishError, withBackoffRetries, formatTimestamp, fetchBlock } = require("./../utils/utils")
 
-const { track_swcv1 } = require("./swcv1")
-const { track_swcv2 } = require("./swcv2")
+const { track_ethereum_v1 } = require("./ethereum_v1")
+const { track_polygon_v2 } = require("./polygon_v2")
+const { track_fantom_v2 } = require("./fantom_v2")
 
 async function track_policies() {
   return new Promise(async (resolve) => {
     console.log('start tracking all policies')
-    let [swcv1, swcv2] = await Promise.all([
-      track_swcv1(),
-      track_swcv2()
+    let [ethereum_v1, polygon_v2, fantom_v2] = await Promise.all([
+      track_ethereum_v1(),
+      track_polygon_v2(),
+      track_fantom_v2(),
     ])
     console.log('done tracking all policies')
-    let res = {swcv1, swcv2}
+    let res = {ethereum_v1, polygon_v2, fantom_v2}
     resolve(res)
   })
 }
