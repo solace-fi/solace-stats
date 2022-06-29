@@ -6,13 +6,13 @@ const BN = ethers.BigNumber
 const formatUnits = ethers.utils.formatUnits
 
 async function analytics_bundle(records) {
-  var [uwp, markets, community, staking, xslocker, swc, positions, series] = records
+  var [uwp, markets, community, staking, xslocker, spi, positions, series] = records
   let res = {
     markets: markets,
     uwp: uwp,
     xslocker: xslocker,
     community: community,
-    swc: swc,
+    spi: spi,
     positions: positions,
     series: series
   }

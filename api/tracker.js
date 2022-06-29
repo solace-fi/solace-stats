@@ -6,7 +6,7 @@ const { track_markets } = require("./markets/tracker")
 const { track_community } = require("./community/tracker")
 const { trackStaking } = require("./staking/tracker")
 const { getXsLocks } = require("./xsLocker/get")
-const { track_policies } = require("./swc/tracker")
+const { track_policies } = require("./spi/tracker")
 const { frontend_bundle } = require("./frontend/bundle")
 const { analytics_bundle } = require("./analytics/bundle")
 

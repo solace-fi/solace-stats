@@ -10,19 +10,19 @@ const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 let deployments = {
   [1]: { // ethereum
     xslockerAddress: "0x501Ace47c5b0C2099C4464f681c3fa2ECD3146C1",
-    stakingRewardsAddress: "0x501ace3D42f9c8723B108D4fBE29989060a91411"
+    stakingRewardsAddress: "0x501ACee6350BB566EBE4A0dABDC9901100B8c445"
   },
   [1313161554]: { // aurora
     xslockerAddress: "0x501Ace47c5b0C2099C4464f681c3fa2ECD3146C1",
-    stakingRewardsAddress: "0x501ace3D42f9c8723B108D4fBE29989060a91411"
+    stakingRewardsAddress: "0x501ACee6350BB566EBE4A0dABDC9901100B8c445"
   },
   [137]: { // polygon
     xslockerAddress: "0x501Ace47c5b0C2099C4464f681c3fa2ECD3146C1",
-    stakingRewardsAddress: "0x501ace3D42f9c8723B108D4fBE29989060a91411"
+    stakingRewardsAddress: "0x501ACee6350BB566EBE4A0dABDC9901100B8c445"
   },
   [250]: { // fantom
     xslockerAddress: "0x501Ace47c5b0C2099C4464f681c3fa2ECD3146C1",
-    stakingRewardsAddress: "0x501ace3D42f9c8723B108D4fBE29989060a91411"
+    stakingRewardsAddress: "0x501ACee6350BB566EBE4A0dABDC9901100B8c445"
   },
 }
 

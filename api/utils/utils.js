@@ -186,6 +186,31 @@ async function fetchBlock(provider, blockTag) {
 }
 exports.fetchBlock = fetchBlock
 
+// fetch events that occurred in a contract with the given event name between startBlock and endBlock
+async function fetchEvents(contract, eventName, startBlock, endBlock) {
+  return new Promise(async (resolve,reject) => {
+    try {
+      var events = await contract.queryFilter(eventName, startBlock, endBlock)
+      resolve(events)
+      return
+    } catch(e) {
+      if(JSON.parse(e.body).error.code != -32602) {
+        reject(e)
+        return
+      }
+      // log response size exceeded. recurse down
+      var midBlock = Math.floor((startBlock+endBlock)/2)
+      var [left, right] = await Promise.all([
+        fetchEvents(contract, eventName, startBlock, midBlock),
+        fetchEvents(contract, eventName, midBlock+1, endBlock),
+      ])
+      var res = left.concat(right)
+      resolve(res)
+    }
+  })
+}
+exports.fetchEvents = fetchEvents
+
 // returns an array of integers starting at start, incrementing, and stopping before stop
 function range(start, stop) {
   let arr = [];

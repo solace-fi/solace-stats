@@ -6,13 +6,13 @@ const BN = ethers.BigNumber
 const formatUnits = ethers.utils.formatUnits
 
 async function frontend_bundle(records) {
-  var [uwp, markets, community, staking, xslocker, swc, positions, series] = records
-  var {ethereum_v1, polygon_v2, fantom_v2} = swc
+  var [uwp, markets, community, staking, xslocker, spi, positions, series] = records
+  var {ethereum_v3, aurora_v3, polygon_v3, fantom_v3} = spi
   var res = {}
   res.globalStakedSolace = staking.global.solaceStaked
   res.averageStakingAPR = staking.global.apr
   res.uwp = sumUWPs(uwp)
-  var [coverLimit, activePolicies, totalPolicies] = aggregatePolicies(ethereum_v1, polygon_v2, fantom_v2)
+  var [coverLimit, activePolicies, totalPolicies] = aggregatePolicies(ethereum_v3, aurora_v3, polygon_v3, fantom_v3)
   res.coverLimit = coverLimit
   res.activePolicies = activePolicies
   res.totalPolicies = totalPolicies
@@ -82,16 +82,16 @@ function sumUWPs(uwps) {
   return s
 }
 
-function aggregatePolicies(ethereum_v1, polygon_v2, fantom_v2) {
+function aggregatePolicies(ethereum_v3, aurora_v3, polygon_v3, fantom_v3) {
   var cl = BN.from(0)
   var ap = 0
   var tp = 0
-  for(var swc of [ethereum_v1, polygon_v2, fantom_v2]) {
-    var history = swc.history
+  for(var spi of [ethereum_v3, aurora_v3, polygon_v3, fantom_v3]) {
+    var history = spi.history
     var latest = history[history.length-1]
     cl = cl.add(latest.coverLimit)
-    tp += swc.policies.length
-    for(var policy of swc.policies) {
+    tp += spi.policies.length
+    for(var policy of spi.policies) {
       if(BN.from(policy.coverLimit).gt("0")) ap++
     }
   }
