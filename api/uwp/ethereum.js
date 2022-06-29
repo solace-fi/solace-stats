@@ -55,8 +55,8 @@ async function createCSV() {
   // checkpoint
   await s3GetObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/uwp/ethereum.csv'}).then(res => {
     csv = res
-    var rows = csv.split('\n')
-    var lastBlock = rows[rows.length-2].split(',')[0]-0
+    var rows = csv.trim().split('\n')
+    var lastBlock = rows[rows.length-1].split(',')[0]-0
     startBlock = lastBlock + blockStep
   }).catch(()=>{})
   console.log(`uwp ethereum: querying block range (${startBlock}, ${endBlock}, ${blockStep}) (${(endBlock-startBlock)/blockStep})`)

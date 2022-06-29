@@ -142,3 +142,12 @@ function decimalsToAmount(decimals) {
   for(var i = 0; i < decimals; ++i) s += '0'
   return BN.from(s)
 }
+
+async function fetchBalancerPoolTokenInfo(vault, balancerPoolID, blockTag="latest") {
+  return new Promise((resolve, reject) => {
+    withBackoffRetries(() => vault.getPoolTokens(balancerPoolID, {blockTag:blockTag})).then(res => {
+      resolve(res)
+    }).catch((e)=>{resolve({tokens:[], balances: []})})
+  })
+}
+exports.fetchBalancerPoolTokenInfo = fetchBalancerPoolTokenInfo
