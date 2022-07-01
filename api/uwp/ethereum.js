@@ -66,7 +66,7 @@ async function createCSV() {
       console.log(`queued ${blockTag}`)
       var [block, balances, prices] = await Promise.all([
         fetchBlock(provider, blockTag),
-        fetchBalances(tokenList, UWP_ADDRESS, blockTag),
+        fetchBalances(provider, tokenList, UWP_ADDRESS, blockTag),
         fetchPrices(blockTag)
       ])
       var row = `${blockTag},${block.timestamp},${formatTimestamp(block.timestamp)},${balances.join(',')},${prices.join(',')}\n`
