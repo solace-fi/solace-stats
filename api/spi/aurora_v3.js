@@ -96,12 +96,12 @@ async function createHistory() {
         var query = policies.filter(policy => policy.policyholder == policyholder)
         if(query.length > 1) throw "uhh"
         if(query.length == 1) return query[0]
-        var policyID = (await spi.policyOf(policyholder, {blockTag: blockNumber})).toString()
+        var policyID = (await spi.policyOf(policyholder, {blockTag: blockNumber+1})).toString()
         if(policyID == "0") return undefined
         var [coverLimit, bal, balnr] = await Promise.all([
-          spi.coverLimitOf(policyID, {blockTag: blockNumber}).then(r=>r.toString()),
-          scp.balanceOf(policyholder, {blockTag: blockNumber}),
-          scp.balanceOfNonRefundable(policyholder, {blockTag: blockNumber}),
+          spi.coverLimitOf(policyID, {blockTag: blockNumber+1}).then(r=>r.toString()),
+          scp.balanceOf(policyholder, {blockTag: blockNumber+1}),
+          scp.balanceOfNonRefundable(policyholder, {blockTag: blockNumber+1}),
         ])
         var depositsMade = bal.sub(balnr).toString()
         var policy = {policyID, policyholder, coverLimit, depositsMade, premiumsCharged: "0"}
@@ -116,12 +116,12 @@ async function createHistory() {
         if(query.length > 1) throw "uhh"
         if(query.length == 1) return query[0]
         var [coverLimit, policyholder] = await Promise.all([
-          spi.coverLimitOf(policyID, {blockTag: blockNumber}).then(cl=>cl.toString()),
-          spi.ownerOf(policyID, {blockTag: blockNumber})
+          spi.coverLimitOf(policyID, {blockTag: blockNumber+1}).then(cl=>cl.toString()),
+          spi.ownerOf(policyID, {blockTag: blockNumber+1})
         ])
         var [bal, balnr] = await Promise.all([
-          scp.balanceOf(policyholder, {blockTag: blockNumber}),
-          scp.balanceOfNonRefundable(policyholder, {blockTag: blockNumber}),
+          scp.balanceOf(policyholder, {blockTag: blockNumber+1}),
+          scp.balanceOfNonRefundable(policyholder, {blockTag: blockNumber+1}),
         ])
         var depositsMade = bal.sub(balnr).toString()
         var policy = {policyID, policyholder, coverLimit, depositsMade, premiumsCharged: "0"}
@@ -138,7 +138,7 @@ async function createHistory() {
         var policyID = event.args.policyID.toString()
         var policy = await getPolicyByPolicyID(policyID)
         var oldCoverLimit = policy.coverLimit
-        var newCoverLimit = await spi.coverLimitOf(policyID, {blockTag: blockNumber})
+        var newCoverLimit = await spi.coverLimitOf(policyID, {blockTag: blockNumber+1})
         policy.coverLimit = newCoverLimit.toString()
         latestBlock.coverLimit = BN.from(latestBlock.coverLimit).sub(oldCoverLimit).add(newCoverLimit).toString()
       } else if(eventName == "PolicyCanceled") {

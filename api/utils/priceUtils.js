@@ -11,7 +11,7 @@ const x192 = BN.from("0x01000000000000000000000000000000000000000000000000")
 // returns the balance of a holder for a list of tokens
 // result is an array
 // each element will be a decimal formatted string eg [ "1.2" ]
-async function fetchBalances(tokenList, holder, blockTag="latest") {
+async function fetchBalances(provider, tokenList, holder, blockTag="latest") {
   function createBalancePromise(i) {
     return new Promise((resolve, reject) => {
       withBackoffRetries(() => ((tokenList[i].address == ETH_ADDRESS)
