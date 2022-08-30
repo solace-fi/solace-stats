@@ -47,8 +47,8 @@ async function createHistory() {
   var blockStep = 1000
   var tokenList = JSON.parse(await s3GetObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'native_uwp/tokenList.json' }, cache=false))[5]
   // checkpoint
-  await s3GetObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/uwp/goerli.json'}).then(res => {
-    history = res
+  await s3GetObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/native_uwp/goerli.json'}).then(res => {
+    history = JSON.parse(res)
     history.sort((a,b)=>a.timestamp-b.timestamp)
     if(history.length > 0) {
       var lastBlock = history[history.length-1].blockNumber
