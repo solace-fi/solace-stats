@@ -9,6 +9,7 @@ const formatUnits = ethers.utils.formatUnits
 
 const UWP_ADDRESS                       = "0x501ACEb41708De16FbedE3b31f3064919E9d7F23";
 const UWE_ADDRESS                       = "0x501ACE809013C8916CAAe439e9653bc436172919";
+const ONE_ETHER = BN.from("1000000000000000000")
 
 var initialized = false
 var provider
@@ -17,8 +18,10 @@ var uwpAbi
 var erc20Abi
 var oracleAbi
 
-async function fetchTokenStats(mcProvider, tokenList, uwpAddress, blockTag) {
+async function fetchPoolStats(mcProvider, tokenList, uwpAddress, blockTag) {
+  // setup multicall
   var promises = []
+  // token calls
   for(var i = 0; i < tokenList.length; ++i) {
     var tokenContract = new multicall.Contract(tokenList[i].address, erc20Abi)
     promises.push(tokenContract.balanceOf(uwpAddress))
@@ -26,15 +29,26 @@ async function fetchTokenStats(mcProvider, tokenList, uwpAddress, blockTag) {
     var oracleContract = new multicall.Contract(tokenList[i].oracle, oracleAbi)
     promises.push(oracleContract.valueOfTokens(tokenList[i].address, oneToken))
   }
+  // uwp calls
+  var uwpContract = new multicall.Contract(uwpAddress, uwpAbi)
+  promises.push(uwpContract.totalSupply())
+  promises.push(uwpContract.valueOfShares(ONE_ETHER))
+  // make multicall
   var results = await mcProvider.all(promises, {blockTag:blockTag})
-  var stats = {}
+  // token calls
+  var tokenStats = {}
   for(var i = 0; i < tokenList.length; ++i) {
-    stats[tokenList[i].symbol] = {
+    tokenStats[tokenList[i].symbol] = {
       balance: formatUnits(results[i*2], tokenList[i].decimals),
       price: formatUnits(results[i*2+1], 18)
     }
   }
-  return stats
+  // uwp calls
+  var poolStats = {
+    supply: formatUnits(results[results.length-2], 18),
+    valuePerShare: formatUnits(results[results.length-1], 18),
+  }
+  return {tokenStats, poolStats}
 }
 
 // creates a json object of pool stats over time
@@ -62,13 +76,14 @@ async function createHistory() {
       console.log(`queued ${blockTag}`)
       var [block, stats] = await Promise.all([
         fetchBlock(provider, blockTag),
-        fetchTokenStats(mcProvider, tokenList, UWP_ADDRESS, blockTag),
+        fetchPoolStats(mcProvider, tokenList, UWP_ADDRESS, blockTag),
       ]);
       var row = {
         blockNumber: blockTag,
         timestamp: block.timestamp,
         timestring: formatTimestamp(block.timestamp),
-        tokens: stats
+        tokens: stats.tokenStats,
+        pool: stats.poolStats
       }
       console.log(`finished ${blockTag}\n${row}`)
       resolve(row)
