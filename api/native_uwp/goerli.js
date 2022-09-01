@@ -34,7 +34,12 @@ async function fetchPoolStats(mcProvider, tokenList, uwpAddress, blockTag) {
   promises.push(uwpContract.totalSupply())
   promises.push(uwpContract.valueOfShares(ONE_ETHER))
   // make multicall
-  var results = await mcProvider.all(promises, {blockTag:blockTag})
+  var results = []
+  try {
+    results = await mcProvider.all(promises, {blockTag:blockTag})
+  } catch(e) {
+    for(var i = 0; i < promises.length; ++i) results.push(BN.from(0))
+  }
   // token calls
   var tokenStats = {}
   for(var i = 0; i < tokenList.length; ++i) {
