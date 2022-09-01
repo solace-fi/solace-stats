@@ -29,7 +29,7 @@ async function track_volatility() {
     var res
     try {
       res = await axios.get(metadata.url)
-      if(Object.keys(res.data).length == 0) throw "empty"
+      if(Object.keys(res.data.data).length == 0) throw "empty"
     } catch(e) {
       resolve(null)
       return

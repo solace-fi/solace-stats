@@ -3,6 +3,6 @@
 exports.handler = async function(event) {
   return {
     statusCode: 301,
-    headers: {"Location":"https://solace.fi/favicon.ico"}
+    headers: {"Location":"https://app.solace.fi/favicon.ico"}
   }
 }
