@@ -1,4 +1,4 @@
-const { getProvider, getMulticallProvider, s3GetObjectPromise, snsPublishError, range, sortBNs } = require("./../utils/utils")
+const { getProvider, getMulticallProvider, s3GetObjectPromise, snsPublishError, range, sortBNs, multicallChunked } = require("./../utils/utils")
 const ethers = require('ethers')
 const BN = ethers.BigNumber
 const formatUnits = ethers.utils.formatUnits
@@ -18,11 +18,11 @@ async function getXsLocksOfChain(chainID) {
   let xsLockerMC = new multicall.Contract(XSLOCKER_ADDRESS, xsLockerABI)
   let supply = (await xsLocker.totalSupply()).toNumber()
   let indices = range(0, supply)
-  let xslockIDs = await mcProvider.all(indices.map(index => xsLockerMC.tokenByIndex(index)), {blockTag:blockTag})
+  let xslockIDs = await multicallChunked(mcProvider, indices.map(index => xsLockerMC.tokenByIndex(index)), blockTag, 200)
   xslockIDs.sort(sortBNs)
   let [xslocks, owners] = await Promise.all([
-    mcProvider.all(xslockIDs.map(xslockID => xsLockerMC.locks(xslockID)), {blockTag:blockTag}),
-    mcProvider.all(xslockIDs.map(xslockID => xsLockerMC.ownerOf(xslockID)), {blockTag:blockTag})
+    multicallChunked(mcProvider, xslockIDs.map(xslockID => xsLockerMC.locks(xslockID)), blockTag, 100),
+    multicallChunked(mcProvider, xslockIDs.map(xslockID => xsLockerMC.ownerOf(xslockID)), blockTag, 200)
   ])
   xslocks = indices.map(i => {
     return {

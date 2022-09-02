@@ -1,4 +1,4 @@
-const { getProvider, getMulticallProvider, s3GetObjectPromise, snsPublishError } = require("./../../utils/utils")
+const { getProvider, getMulticallProvider, s3GetObjectPromise, snsPublishError, multicallChunked } = require("./../../utils/utils")
 const ethers = require('ethers')
 const BN = ethers.BigNumber
 const formatUnits = ethers.utils.formatUnits
@@ -39,7 +39,7 @@ async function getTotalSupply(chainID) {
       requests.push(xsolace.totalSupply())
       var skipAddresses = Object.keys(skipAddresses[chainID+""])
       skipAddresses.forEach(addr => requests.push(xsolace.balanceOf(addr)));
-      var results = await mcProvider.all(requests)
+      var results = await multicallChunked(mcProvider, requests, "latest", 200)
       var supply = results[0]
       for(var i = 1; i < results.length; ++i) {
         supply = supply.sub(results[i])
