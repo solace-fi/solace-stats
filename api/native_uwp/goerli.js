@@ -1,6 +1,6 @@
 // tracks assets in goerli uwp over time
 
-const { getProvider, getMulticallProvider, s3GetObjectPromise, s3PutObjectPromise, snsPublishError, withBackoffRetries, formatTimestamp, fetchBlock } = require("./../utils/utils")
+const { getProvider, getMulticallProvider, s3GetObjectPromise, s3PutObjectPromise, snsPublishError, withBackoffRetries, formatTimestamp, fetchBlock, multicallChunked } = require("./../utils/utils")
 const { fetchBalances, fetchBalanceOrZero, fetchSupplyOrZero, fetchReservesOrZero, fetchUniswapV2PriceOrZero, fetchUniswapV3PriceOrZero, fetchScpPpsOrZero } = require("./../utils/priceUtils")
 const ethers = require('ethers')
 const multicall = require('ethers-multicall')
@@ -36,7 +36,7 @@ async function fetchPoolStats(mcProvider, tokenList, uwpAddress, blockTag) {
   // make multicall
   var results = []
   try {
-    results = await mcProvider.all(promises, {blockTag:blockTag})
+    results = await multicallChunked(mcProvider, promises, blockTag, 50)
   } catch(e) {
     for(var i = 0; i < promises.length; ++i) results.push(BN.from(0))
   }

@@ -1,4 +1,4 @@
-const { getMulticallProvider, s3GetObjectPromise, snsPublishError } = require("./../utils/utils")
+const { getMulticallProvider, s3GetObjectPromise, snsPublishError, multicallChunked, range } = require("./../utils/utils")
 const ethers = require('ethers')
 const BN = ethers.BigNumber
 const formatUnits = ethers.utils.formatUnits
@@ -19,26 +19,17 @@ const XSOLACE_ADDRESS = "0x501ACe802447B1Ed4Aae36EA830BFBde19afbbF9"
 const ERC20ABI = [{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]
 const ERC721ABI = [{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"ownerOf","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],"name":"tokenByIndex","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]
 
-function range(start, stop) {
-  start = BN.from(start).toNumber()
-  stop = BN.from(stop).toNumber()
-  var arr = [];
-  for(var i = start; i < stop; ++i) {
-    arr.push(i);
-  }
-  return arr;
-}
-
 async function getVotePowers(chainID) {
   var mcProvider = await getMulticallProvider(chainID)
   var blockTag = await mcProvider._provider.getBlockNumber()
-  var xslocker = new multicall.Contract(XSLOCKER_ADDRESS, ERC721ABI)
-  var [supply] = await mcProvider.all([xslocker.totalSupply()], {blockTag:blockTag})
-  var tokenIDs = await mcProvider.all(range(0, supply).map(index => xslocker.tokenByIndex(index)), {blockTag:blockTag})
-  var owners = await mcProvider.all(tokenIDs.map(tokenID => xslocker.ownerOf(tokenID)), {blockTag:blockTag})
+  let xslocker = new ethers.Contract(XSLOCKER_ADDRESS, ERC721ABI, mcProvider._provider)
+  var xslockerMC = new multicall.Contract(XSLOCKER_ADDRESS, ERC721ABI)
+  var supply = await xslocker.totalSupply({blockTag:blockTag})
+  var tokenIDs = await multicallChunked(mcProvider, range(0, supply).map(index => xslockerMC.tokenByIndex(index)), blockTag, 100)
+  var owners = await multicallChunked(mcProvider, tokenIDs.map(tokenID => xslockerMC.ownerOf(tokenID)), blockTag, 100)
   owners = [... new Set(owners)]
   var xsolace = new multicall.Contract(XSOLACE_ADDRESS, ERC20ABI)
-  var balances = await mcProvider.all(owners.map(account => xsolace.balanceOf(account)), {blockTag:blockTag})
+  var balances = await multicallChunked(mcProvider, owners.map(account => xsolace.balanceOf(account)), blockTag, 50)
   var votePowers = {}
   for(var i = 0; i < owners.length; ++i) {
     votePowers[owners[i]] = balances[i]

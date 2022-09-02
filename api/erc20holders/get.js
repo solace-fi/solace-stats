@@ -1,4 +1,4 @@
-const { getProvider, getMulticallProvider, s3GetObjectPromise, snsPublishError, findDeployBlock, withBackoffRetries, fetchEvents, formatUnitsFull } = require("./../utils/utils")
+const { getProvider, getMulticallProvider, s3GetObjectPromise, snsPublishError, findDeployBlock, withBackoffRetries, fetchEvents, formatUnitsFull, multicallChunked, range } = require("./../utils/utils")
 const ethers = require('ethers')
 const BN = ethers.BigNumber
 const formatUnits = ethers.utils.formatUnits
@@ -13,7 +13,6 @@ const headers = {
 }
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
-const GAS_LIMIT = 30000000
 
 const ERC20ABI = [{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"}]
 
@@ -56,33 +55,8 @@ async function getHolders(chainID, token) {
   })
   var holders = Array.from(holderSet)
   // step 4: get balances
-  // uses multicall, chunked in groups
-  // TODO: how to mass query effectively?
-  // all at once times out
-  //var promises = []
-  var balances = []
-  var groupSize = 200
-  for(var i = 0; i < holders.length; ) {
-    var promiseSubset = []
-    for(var j = 0; j < groupSize; ++j) {
-      promiseSubset.push(mcContract.balanceOf(holders[i]))
-      ++i
-      if(i >= holders.length) break
-    }
-    //promises.push(withBackoffRetries(() => mcProvider.all(promiseSubset, {blockTag:blockNumber,gasLimit:GAS_LIMIT})))
-    balances.push(await withBackoffRetries(() => mcProvider.all(promiseSubset, {blockTag:blockNumber,gasLimit:GAS_LIMIT})))
-  }
-  //var balances = await Promise.all(promises)
-  var holders2 = []
-  var groupNum = 0
-  for(var i = 0; i < holders.length; ) {
-    for(var j = 0; j < groupSize; ++j) {
-      holders2.push({holder: holders[i], balance: formatUnitsFull(balances[groupNum][j])})
-      ++i
-      if(i >= holders.length) break
-    }
-    ++groupNum
-  }
+  var balances = await multicallChunked(mcProvider, holders.map(holder => mcContract.balanceOf(holder)), "latest", 200)
+  var holders2 = range(0, holders.length).map(i => { return {holder: holders[i], balance: formatUnitsFull(balances[i])} })
   // step 5: filter and sort
   holders2 = holders2.filter((a) => a.balance > 0)
   holders2 = holders2.sort((a,b) => b.balance - a.balance)

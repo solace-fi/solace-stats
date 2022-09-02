@@ -8,8 +8,7 @@ const headers = {
 // Lambda handler
 exports.handler = async function(event) {
   return {
-      statusCode: 200,
-      headers: headers
-    }
+    statusCode: 200,
+    headers: headers
   }
 }
