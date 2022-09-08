@@ -3,7 +3,6 @@
 import json
 import boto3
 import os
-import sys
 from datetime import datetime
 import requests
 
@@ -12,7 +11,6 @@ Web3 = web3.Web3
 from web3.auto import w3 as w3auto
 from eth_account.messages import encode_structured_data
 from eth_account import Account
-import asn1tools
 
 DATA_BUCKET = os.environ.get("DATA_BUCKET", "stats.solace.fi.data")
 DEAD_LETTER_TOPIC = os.environ.get("DEAD_LETTER_TOPIC", "arn:aws:sns:us-west-2:151427405638:DeadLetterSnsTopic")
