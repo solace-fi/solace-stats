@@ -10,6 +10,7 @@ var tokenList = [
   {address: "0x45c32fA6DF82ead1e2EF74d17b76547EDdFaFF89", symbol: "FRAX", decimals: 18},
   {address: "0x501acE9c35E60f03A2af4d484f49F9B1EFde9f40", symbol: "SOLACE", decimals: 18}
 ]
+const CHAIN_ID_POLYGON = 137
 var initialized = false
 var provider
 var tokenDict = {}
@@ -70,7 +71,7 @@ async function prefetch() {
   if(initialized) return
 
   [provider, erc20Abi, uniV2PoolAbi, uniV3PoolAbi, balancerVaultAbi] = await Promise.all([
-    getProvider(137),
+    getProvider(CHAIN_ID_POLYGON),
     s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'abi/other/ERC20.json'}, cache=true),
     s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'abi/other/UniswapV2Pair.json'}, cache=true),
     s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'abi/other/UniswapV3Pool.json'}, cache=true),

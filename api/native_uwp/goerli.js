@@ -10,6 +10,7 @@ const formatUnits = ethers.utils.formatUnits
 const UWP_ADDRESS                       = "0x501ACEb41708De16FbedE3b31f3064919E9d7F23";
 const UWE_ADDRESS                       = "0x501ACE809013C8916CAAe439e9653bc436172919";
 const ONE_ETHER = BN.from("1000000000000000000")
+const CHAIN_ID_GOERLI = 5
 
 var initialized = false
 var provider
@@ -64,7 +65,7 @@ async function createHistory() {
   var startBlock = 7471443
   var endBlock = await provider.getBlockNumber()
   var blockStep = 1000
-  var tokenList = JSON.parse(await s3GetObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'native_uwp/tokenList.json' }, cache=false))[5]
+  var tokenList = JSON.parse(await s3GetObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'native_uwp/tokenList.json' }, cache=false))[CHAIN_ID_GOERLI]
   // checkpoint
   await s3GetObjectPromise({ Bucket: 'stats.solace.fi.data', Key: 'output/native_uwp/goerli.json'}).then(res => {
     history = JSON.parse(res)
@@ -106,8 +107,8 @@ async function prefetch() {
   if(initialized) return
 
   [provider, mcProvider, uwpAbi, erc20Abi, oracleAbi] = await Promise.all([
-    getProvider(5),
-    getMulticallProvider(5),
+    getProvider(CHAIN_ID_GOERLI),
+    getMulticallProvider(CHAIN_ID_GOERLI),
     s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'abi/native/UnderwritingPool.json'}, cache=true).then(JSON.parse),
     s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'abi/other/ERC20.json'}, cache=true).then(JSON.parse),
     s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'abi/interfaces/native/IPriceOracle.json'}, cache=true).then(JSON.parse),

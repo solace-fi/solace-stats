@@ -145,7 +145,8 @@ async function withBackoffRetries(f, retryCount = 7, jitter = 10000) {
         break
       } catch (error) {
         i++
-        if(!error.toString().toLowerCase().includes("timeout")) {
+        var s = error.toString().toLowerCase()
+        if(! ( s.includes("timeout") || s.includes("server_error") ) ) {
           reject(error)
           break
         }

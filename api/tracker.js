@@ -8,7 +8,6 @@ const { trackStaking } = require("./staking/tracker")
 const { getXsLocks } = require("./xsLocker/get")
 const { track_policies } = require("./spi/tracker")
 const { track_native_uwp } = require("./native_uwp/tracker")
-const { track_volatility } = require("./volatility/tracker")
 const { frontend_bundle } = require("./frontend/bundle")
 const { analytics_bundle } = require("./analytics/bundle")
 
@@ -30,7 +29,6 @@ async function track() {
     s3GetObjectPromise({Bucket:'risk-data.solace.fi.data', Key:'positions-cache.json'}).then(JSON.parse),
     s3GetObjectPromise({Bucket:'risk-data.solace.fi.data', Key:'current-rate-data/series.json'}).then(JSON.parse),
     track_native_uwp(),
-    track_volatility(),
   ])
   await Promise.all([
     frontend_bundle(res),

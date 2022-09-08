@@ -11,9 +11,9 @@ var provider
 var spi
 var scp
 
+const CHAIN_ID_AURORA = 1313161554
 const SPI_ADDRESS = "0x501ACeB72d62C9875825b71d9f78a27780B5624d"
 const SPI_DEPLOY_BLOCK = 68147982
-
 const SCP_ADDRESS = "0x501ACE72166956F57b44dbBcc531A8E741449997"
 
 const PREMIUM_POOL_ADDRESS = "0x0436C20030d0C2e278E7e8e4b42D304a6420D3bb"
@@ -191,7 +191,7 @@ function sortEvents(a,b) {
 async function prefetch() {
   if(initialized) return
   [provider, spiABI, scpABI] = await Promise.all([
-    getProvider(1313161554),
+    getProvider(CHAIN_ID_AURORA),
     s3GetObjectPromise({Bucket:'stats.solace.fi.data', Key:'abi/products/SolaceCoverProductV3.json'}, cache=true),
     s3GetObjectPromise({Bucket:'stats.solace.fi.data', Key:'abi/payment/SCP.json'}, cache=true),
   ])
