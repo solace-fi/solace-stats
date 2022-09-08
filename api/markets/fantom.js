@@ -6,6 +6,7 @@ const ethers = require('ethers')
 const BN = ethers.BigNumber
 const formatUnits = ethers.utils.formatUnits
 
+const CHAIN_ID_FANTOM = 250
 var initialized = false
 var provider
 var pools = {}
@@ -62,7 +63,7 @@ async function prefetch() {
   if(initialized) return
 
   [provider, uniV2PairAbi, balancerVaultAbi] = await Promise.all([
-    getProvider(250),
+    getProvider(CHAIN_ID_FANTOM),
     s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'abi/other/UniswapV2Pair.json'}, cache=true),
     s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'abi/other/BalancerVault.json'}, cache=true),
   ])

@@ -6,6 +6,7 @@ const ethers = require('ethers')
 const BN = ethers.BigNumber
 const formatUnits = ethers.utils.formatUnits
 
+const CHAIN_ID_AURORA = 1313161554
 const UWP_ADDRESS = "0x4A6B0f90597e7429Ce8400fC0E2745Add343df78"
 
 var tokenList = [
@@ -98,7 +99,7 @@ async function prefetch() {
   if(initialized) return
 
   [provider, erc20Abi, uniV2PairAbi, ctokenAbi] = await Promise.all([
-    getProvider(1313161554),
+    getProvider(CHAIN_ID_AURORA),
     s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'abi/other/ERC20.json'}, cache=true),
     s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'abi/other/UniswapV2Pair.json'}, cache=true),
     s3GetObjectPromise({Bucket: 'stats.solace.fi.data', Key: 'abi/other/CToken.json'}, cache=true),

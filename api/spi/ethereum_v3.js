@@ -11,6 +11,7 @@ var provider
 var spi
 var scp
 
+const CHAIN_ID_ETHEREUM = 1
 const SPI_ADDRESS = "0x501ACeB72d62C9875825b71d9f78a27780B5624d"
 const SPI_DEPLOY_BLOCK = 14999363
 
@@ -191,7 +192,7 @@ function sortEvents(a,b) {
 async function prefetch() {
   if(initialized) return
   [provider, spiABI, scpABI] = await Promise.all([
-    getProvider(1),
+    getProvider(CHAIN_ID_ETHEREUM),
     s3GetObjectPromise({Bucket:'stats.solace.fi.data', Key:'abi/products/SolaceCoverProductV3.json'}, cache=true),
     s3GetObjectPromise({Bucket:'stats.solace.fi.data', Key:'abi/payment/SCP.json'}, cache=true),
   ])
