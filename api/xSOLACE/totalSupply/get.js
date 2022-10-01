@@ -37,8 +37,8 @@ async function getTotalSupply(chainID) {
     try {
       var requests = []
       requests.push(xsolace.totalSupply())
-      var skipAddresses = Object.keys(skipAddresses[chainID+""])
-      skipAddresses.forEach(addr => requests.push(xsolace.balanceOf(addr)));
+      var skipAddresses2 = Object.keys(skipAddresses[chainID+""])
+      skipAddresses2.forEach(addr => requests.push(xsolace.balanceOf(addr)));
       var results = await multicallChunked(mcProvider, requests, "latest", 200)
       var supply = results[0]
       for(var i = 1; i < results.length; ++i) {
